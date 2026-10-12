@@ -1,0 +1,147 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="using:Mach1DriverCustom.Controls">
+
+    <!-- Movimento da interface. Este arquivo só é carregado quando o Windows está com as
+         animações ligadas (Configurações > Acessibilidade > Efeitos visuais); ver App.axaml.cs.
+         A regra: o movimento responde a uma ação de quem usa (trocar de aba, abrir uma seção,
+         aplicar a curva) e mostra o que mudou. A única animação "espontânea" é a entrada da
+         janela. O resto do movimento (lista em sequência, pulso, gráficos) está em
+         Controls/Motion.cs e nos próprios gráficos. -->
+
+    <!-- Trocar de aba: a página antiga sai para um lado e a nova entra do outro, no sentido da aba. -->
+    <Style Selector="TabControl">
+        <Setter Property="PageTransition">
+            <c:SlideFadeTransition Duration="0:0:0.28" Offset="44" />
+        </Setter>
+    </Style>
+
+    <!-- O traço da aba selecionada cresce a partir do centro. -->
+    <Style Selector="TabItem /template/ Border#PART_SelectedPipe">
+        <Setter Property="IsVisible" Value="True" />
+        <Setter Property="RenderTransform" Value="scaleX(0)" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.26" Easing="CubicEaseOut" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="TabItem:selected /template/ Border#PART_SelectedPipe">
+        <Setter Property="RenderTransform" Value="scaleX(1)" />
+    </Style>
+
+    <!-- Entrada da janela, em três tempos: cabeçalho, conteúdo e histórico. Uma vez só. -->
+    <Style Selector=":is(Control).enter-first">
+        <Style.Animations>
+            <Animation Duration="0:0:0.45" Easing="QuinticEaseOut">
+                <KeyFrame Cue="0%">
+                    <Setter Property="Opacity" Value="0" />
+                    <Setter Property="TranslateTransform.Y" Value="-22" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="Opacity" Value="1" />
+                    <Setter Property="TranslateTransform.Y" Value="0" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+    <Style Selector=":is(Control).enter-second">
+        <Style.Animations>
+            <Animation Duration="0:0:0.55" Delay="0:0:0.12" Easing="QuinticEaseOut" FillMode="Backward">
+                <KeyFrame Cue="0%">
+                    <Setter Property="Opacity" Value="0" />
+                    <Setter Property="TranslateTransform.Y" Value="36" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="Opacity" Value="1" />
+                    <Setter Property="TranslateTransform.Y" Value="0" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+    <Style Selector=":is(Control).enter-third">
+        <Style.Animations>
+            <Animation Duration="0:0:0.5" Delay="0:0:0.3" Easing="QuinticEaseOut" FillMode="Backward">
+                <KeyFrame Cue="0%">
+                    <Setter Property="Opacity" Value="0" />
+                    <Setter Property="TranslateTransform.Y" Value="20" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="Opacity" Value="1" />
+                    <Setter Property="TranslateTransform.Y" Value="0" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+
+    <!-- Avisos e seções que aparecem por causa de uma ação: caem no lugar e passam um pouco do ponto. -->
+    <Style Selector="Border.notice[IsVisible=True], :is(Control).reveal[IsVisible=True]">
+        <Style.Animations>
+            <Animation Duration="0:0:0.42" Easing="BackEaseOut">
+                <KeyFrame Cue="0%">
+                    <Setter Property="Opacity" Value="0" />
+                    <Setter Property="TranslateTransform.Y" Value="-22" />
+                </KeyFrame>
+                <KeyFrame Cue="45%">
+                    <Setter Property="Opacity" Value="1" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="Opacity" Value="1" />
+                    <Setter Property="TranslateTransform.Y" Value="0" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+
+    <!-- Botões: a cor de fundo muda suave ao passar o mouse e ao apertar. -->
+    <Style Selector="Button /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.14" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <!-- A ação principal sobe um pouco sob o mouse e afunda ao ser apertada. -->
+    <Style Selector="Button.primary">
+        <Setter Property="RenderTransform" Value="none" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.16" Easing="CubicEaseOut" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.primary:pointerover">
+        <Setter Property="RenderTransform" Value="translateY(-2px) scale(1.03)" />
+    </Style>
+    <Style Selector="Button.primary:pressed">
+        <Setter Property="RenderTransform" Value="scale(0.95)" />
+    </Style>
+
+    <!-- A leitura de temperatura troca de cor (azul, branco, laranja, vermelho) sem salto. -->
+    <Style Selector="TextBlock.readout">
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Foreground" Duration="0:0:0.5" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <!-- Barras de progresso avançam contínuas em vez de aos pulos. -->
+    <Style Selector="ProgressBar">
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="Value" Duration="0:0:0.4" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <!-- Seções desabilitadas (durante um teste, por exemplo) esmaecem em vez de piscar. -->
+    <Style Selector="Border.panel, StackPanel.section">
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="Opacity" Duration="0:0:0.25" />
+            </Transitions>
+        </Setter>
+    </Style>
+</Styles>

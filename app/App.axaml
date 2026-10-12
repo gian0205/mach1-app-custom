@@ -1,0 +1,61 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Mach1DriverCustom.App"
+             RequestedThemeVariant="Dark">
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <!-- Primitivos: ardósia azulada como base e uma escala térmica como sinal
+                 (gelo = menos tensão / frio, brasa = mais tensão / quente). -->
+            <Color x:Key="Color.Ink">#171B24</Color>
+            <Color x:Key="Color.Panel">#1F2531</Color>
+            <Color x:Key="Color.Raised">#2A3242</Color>
+            <Color x:Key="Color.Line">#343D50</Color>
+            <Color x:Key="Color.Text">#E6E9F0</Color>
+            <Color x:Key="Color.TextMuted">#95A0B5</Color>
+            <Color x:Key="Color.Ice">#7CC4F2</Color>
+            <Color x:Key="Color.Ember">#F59A3C</Color>
+            <Color x:Key="Color.Critical">#F0605A</Color>
+
+            <!-- Semânticos -->
+            <SolidColorBrush x:Key="Brush.Window" Color="{StaticResource Color.Ink}" />
+            <SolidColorBrush x:Key="Brush.Surface" Color="{StaticResource Color.Panel}" />
+            <SolidColorBrush x:Key="Brush.Track" Color="{StaticResource Color.Raised}" />
+            <SolidColorBrush x:Key="Brush.Line" Color="{StaticResource Color.Line}" />
+            <SolidColorBrush x:Key="Brush.Text" Color="{StaticResource Color.Text}" />
+            <SolidColorBrush x:Key="Brush.TextMuted" Color="{StaticResource Color.TextMuted}" />
+            <SolidColorBrush x:Key="Brush.Cool" Color="{StaticResource Color.Ice}" />
+            <SolidColorBrush x:Key="Brush.Warm" Color="{StaticResource Color.Ember}" />
+            <SolidColorBrush x:Key="Brush.Critical" Color="{StaticResource Color.Critical}" />
+            <SolidColorBrush x:Key="Brush.OnAccent" Color="{StaticResource Color.Ink}" />
+
+            <!-- Bahnschrift (DIN, já vem no Windows) para títulos e números; Inter para o texto. -->
+            <FontFamily x:Key="Font.Display">Bahnschrift</FontFamily>
+        </ResourceDictionary>
+    </Application.Resources>
+
+    <TrayIcon.Icons>
+        <TrayIcons>
+            <TrayIcon Icon="/Assets/avalonia-logo.ico" ToolTipText="MACH1 Driver Custom" Clicked="OnTrayClicked">
+                <TrayIcon.Menu>
+                    <NativeMenu>
+                        <NativeMenuItem Header="Abrir" Click="OnTrayOpen" />
+                        <NativeMenuItem Header="Sair" Click="OnTrayExit" />
+                    </NativeMenu>
+                </TrayIcon.Menu>
+            </TrayIcon>
+        </TrayIcons>
+    </TrayIcon.Icons>
+
+    <Application.Styles>
+        <FluentTheme DensityStyle="Compact">
+            <FluentTheme.Palettes>
+                <ColorPaletteResources x:Key="Dark"
+                                       Accent="#7CC4F2"
+                                       RegionColor="#171B24" />
+            </FluentTheme.Palettes>
+        </FluentTheme>
+        <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml" />
+        <StyleInclude Source="/Styles/AppStyles.axaml" />
+    </Application.Styles>
+</Application>

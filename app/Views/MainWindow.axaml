@@ -1,0 +1,561 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Mach1DriverCustom.ViewModels"
+        xmlns:m="using:Mach1DriverCustom.Models"
+        xmlns:c="using:Mach1DriverCustom.Controls"
+        x:Class="Mach1DriverCustom.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Width="1120" Height="900" MinWidth="980" MinHeight="660"
+        WindowStartupLocation="CenterScreen"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaTitleBarHeightHint="40"
+        Title="MACH1 Driver Custom">
+
+    <DockPanel>
+    <!-- Faixa do topo: é onde o Avalonia desenha o nome e os botões da janela, e serve para arrastá-la -->
+    <Border DockPanel.Dock="Top" Height="36" IsHitTestVisible="False" />
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="30,4,30,0">
+
+        <!-- Processador e temperaturas -->
+        <Grid ColumnDefinitions="*,Auto" Classes="enter-first">
+            <StackPanel Spacing="4" VerticalAlignment="Bottom">
+                <TextBlock Text="{Binding CpuName}" Classes="display" />
+                <TextBlock Text="{Binding Details}" Classes="muted" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" VerticalAlignment="Bottom">
+                <TextBlock Text="{Binding Temperature}" Classes="readout" HorizontalAlignment="Right"
+                           Classes.cool="{Binding IsCool}" Classes.warm="{Binding IsWarm}" Classes.hot="{Binding IsHot}" />
+                <TextBlock Text="Temperatura do processador" Classes="muted" HorizontalAlignment="Right" />
+                <TextBlock Text="{Binding GpuTemperature}" Classes="muted" HorizontalAlignment="Right" />
+            </StackPanel>
+        </Grid>
+
+        <!-- Avisos -->
+        <StackPanel Grid.Row="1">
+            <Border Classes="notice" IsVisible="{Binding DriverMissing}">
+                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                    <TextBlock TextWrapping="Wrap" VerticalAlignment="Center"
+                               Text="Falta o driver PawnIO. Sem ele o app não ajusta o processador nem lê a temperatura dele; a tela do water cooler, os outros sensores e o benchmark funcionam. Instale por pawnio.eu ou com 'winget install namazso.PawnIO' e tente de novo." />
+                    <Button Grid.Column="1" Content="Abrir pawnio.eu" Command="{Binding OpenDriverPageCommand}" />
+                    <Button Grid.Column="2" Content="Tentar de novo" Command="{Binding InitializeCommand}" />
+                </Grid>
+            </Border>
+
+            <Border Classes="notice" IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                    <TextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" VerticalAlignment="Center" />
+                    <Button Grid.Column="1" Content="Tentar de novo" Command="{Binding InitializeCommand}" />
+                </Grid>
+            </Border>
+
+            <Border Classes="notice" IsVisible="{Binding StartupBlocked}">
+                <TextBlock TextWrapping="Wrap"
+                           Text="O PC caiu logo depois da última aplicação automática, então a curva salva não foi reaplicada neste logon. Use margens menos agressivas e salve o perfil para liberar de novo." />
+            </Border>
+        </StackPanel>
+
+        <TabControl Grid.Row="2" Classes="enter-second" SelectedIndex="{Binding SelectedTab}" Margin="0,10,0,16" Padding="0,16,0,0">
+
+            <!-- ============ Processador ============ -->
+            <TabItem Header="Processador">
+                <Grid ColumnDefinitions="*,330" ColumnSpacing="34">
+
+                    <!-- Curve Optimizer: a única superfície elevada da aba -->
+                    <Border Classes="panel" IsEnabled="{Binding CanTune}">
+                        <DockPanel>
+                            <StackPanel DockPanel.Dock="Top" Spacing="6">
+                                <TextBlock Text="Curve Optimizer" Classes="heading" />
+                                <TextBlock Classes="muted" MaxWidth="560" HorizontalAlignment="Left"
+                                           Text="Margem negativa reduz a tensão do núcleo: menos calor e mais clock sustentado. Vale até o próximo reboot; se travar, basta reiniciar." />
+
+                                <!-- Cabeçalho das colunas, com a escala da barra -->
+                                <Grid ColumnDefinitions="76,118,*,64,84" ColumnSpacing="14" Margin="0,16,0,2">
+                                    <TextBlock Grid.Column="1" Text="A aplicar" Classes="muted" />
+                                    <c:MarginScale Grid.Column="2" Minimum="{Binding MinMargin}" Maximum="{Binding MaxMargin}" Height="18" />
+                                    <TextBlock Grid.Column="3" Text="Em vigor" Classes="muted" HorizontalAlignment="Right" />
+                                    <TextBlock Grid.Column="4" Text="Clock" Classes="muted" HorizontalAlignment="Right" />
+                                </Grid>
+                            </StackPanel>
+
+                            <StackPanel DockPanel.Dock="Bottom" Spacing="14" Margin="0,14,0,0">
+                                <TextBlock Classes="muted"
+                                           Text="A barra mostra a margem a aplicar; o traço claro, a que está em vigor no processador." />
+                                <Border Classes="rule" />
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <Button Classes="primary" Content="Aplicar" Command="{Binding ApplyCommand}" />
+                                        <Button Content="Zerar curva" Command="{Binding ResetCurveCommand}" />
+                                        <Button Content="Reler" Command="{Binding RefreshCommand}" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Text="Todos os núcleos" VerticalAlignment="Center" />
+                                        <NumericUpDown Width="118" Value="{Binding AllCoreMargin}" FormatString="0" Increment="1"
+                                                       Minimum="{Binding MinMargin}" Maximum="{Binding MaxMargin}" />
+                                        <Button Content="Preencher" Command="{Binding FillAllCoresCommand}" />
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+
+                            <ScrollViewer>
+                                <ItemsControl ItemsSource="{Binding Cores}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:CoreViewModel">
+                                            <Grid ColumnDefinitions="76,118,*,64,84" ColumnSpacing="14" Margin="0,4" c:Motion.StaggerIndex="{Binding Index}">
+                                                <TextBlock Text="{Binding Label}" Classes="num" />
+                                                <NumericUpDown Grid.Column="1" Value="{Binding Margin}" FormatString="0" Increment="1"
+                                                               Minimum="{Binding MinMargin}" Maximum="{Binding MaxMargin}" />
+                                                <c:MarginBar Grid.Column="2" Value="{Binding MarginValue}" Applied="{Binding AppliedValue}"
+                                                             Minimum="{Binding MinMargin}" Maximum="{Binding MaxMargin}"
+                                                             VerticalAlignment="Center" />
+                                                <TextBlock Grid.Column="3" Text="{Binding Current}" Classes="num" HorizontalAlignment="Right"
+                                                           c:Motion.PulseKey="{Binding Current}" />
+                                                <TextBlock Grid.Column="4" Text="{Binding Clock}" Classes="num" HorizontalAlignment="Right"
+                                                           Foreground="{StaticResource Brush.TextMuted}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </DockPanel>
+                    </Border>
+
+                    <ScrollViewer Grid.Column="1">
+                        <StackPanel Spacing="18" Margin="0,6,14,0">
+
+                            <StackPanel Classes="section" Spacing="10" IsEnabled="{Binding CanTune}">
+                                <TextBlock Text="Limites de PBO" Classes="heading" />
+                                <CheckBox Content="Alterar limites ao aplicar" IsChecked="{Binding ChangeLimits}" />
+                                <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="14" RowSpacing="6"
+                                      IsEnabled="{Binding ChangeLimits}">
+                                    <TextBlock Text="PPT, em watts" VerticalAlignment="Center" />
+                                    <NumericUpDown Grid.Column="1" Value="{Binding Ppt}" FormatString="0" Minimum="45" Maximum="250" Increment="5" />
+                                    <TextBlock Grid.Row="1" Text="TDC, em ampères" VerticalAlignment="Center" />
+                                    <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding Tdc}" FormatString="0" Minimum="30" Maximum="200" Increment="5" />
+                                    <TextBlock Grid.Row="2" Text="EDC, em ampères" VerticalAlignment="Center" />
+                                    <NumericUpDown Grid.Row="2" Grid.Column="1" Value="{Binding Edc}" FormatString="0" Minimum="45" Maximum="250" Increment="5" />
+                                </Grid>
+                                <TextBlock Classes="muted" Text="{Binding StockLimits}" />
+                                <TextBlock Classes="muted" Text="Depois de alterados, os limites só voltam ao valor da BIOS no reboot." />
+                            </StackPanel>
+
+                            <Border Classes="rule" />
+
+                            <StackPanel Spacing="10">
+                                <TextBlock Text="Teste de estabilidade" Classes="heading" />
+                                <TextBlock Classes="muted"
+                                           Text="Carrega um núcleo por vez com a curva em vigor e confere os cálculos. Se um núcleo errar, a margem dele é zerada na hora. É uma triagem rápida, não substitui dias de uso." />
+                                <Grid ColumnDefinitions="*,118" ColumnSpacing="14" IsEnabled="{Binding IsNotTesting}">
+                                    <TextBlock Text="Segundos por núcleo" VerticalAlignment="Center" />
+                                    <NumericUpDown Grid.Column="1" Value="{Binding TestSeconds}" FormatString="0" Minimum="10" Maximum="900" Increment="10" />
+                                </Grid>
+                                <Button Content="Testar a curva em vigor" Command="{Binding RunStabilityTestCommand}"
+                                        IsVisible="{Binding IsNotTesting}" IsEnabled="{Binding CanTune}" />
+                                <Button Content="Cancelar o teste" Command="{Binding CancelStabilityTestCommand}"
+                                        IsVisible="{Binding IsTesting}" />
+                                <ProgressBar Value="{Binding TestProgress}" Maximum="100" IsVisible="{Binding IsTesting}" />
+                                <TextBlock Classes="muted" Text="{Binding TestStatus}" />
+                            </StackPanel>
+
+                            <Border Classes="rule" />
+
+                            <StackPanel Spacing="10">
+                                <TextBlock Text="Perfis por jogo" Classes="heading" />
+                                <TextBlock Classes="muted"
+                                           Text="Enquanto o executável estiver aberto, a margem dele vale para todos os núcleos. Ao fechar, volta a curva desta janela." />
+                                <ItemsControl ItemsSource="{Binding Games}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="m:GameProfile">
+                                            <Grid ColumnDefinitions="*,Auto" Margin="0,2">
+                                                <TextBlock Text="{Binding Summary}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                <Button Grid.Column="1" Content="Remover"
+                                                        Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).RemoveGameCommand}"
+                                                        CommandParameter="{Binding}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" ColumnSpacing="14" RowSpacing="6">
+                                    <TextBlock Text="Executável" VerticalAlignment="Center" />
+                                    <TextBox Grid.Column="1" Text="{Binding NewGameExecutable}" />
+                                    <TextBlock Grid.Row="1" Text="Margem" VerticalAlignment="Center" />
+                                    <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding NewGameMargin}" FormatString="0"
+                                                   Minimum="{Binding MinMargin}" Maximum="{Binding MaxMargin}" />
+                                </Grid>
+                                <Button Content="Adicionar jogo" Command="{Binding AddGameCommand}" />
+                                <TextBlock Classes="muted" Text="O nome é o do arquivo, por exemplo cs2.exe." />
+                                <TextBlock Text="{Binding ActiveGameText}" TextWrapping="Wrap" Foreground="{StaticResource Brush.Cool}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+
+            <!-- ============ Tela ============ -->
+            <TabItem Header="Tela do water cooler">
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="34">
+
+                    <!-- Prévia do que está indo para a tela -->
+                    <StackPanel Spacing="10">
+                        <Border Classes="panel" Padding="12">
+                            <Border Width="288" Height="512" CornerRadius="6" ClipToBounds="True"
+                                    Background="{StaticResource Brush.Window}">
+                                <c:LayoutCanvas Source="{Binding LcdPreview}" Flipped="{Binding LcdFlipped}" IsHitTestVisible="False" Focusable="False" />
+                            </Border>
+                        </Border>
+                        <TextBlock Classes="muted" MaxWidth="312" Text="Prévia do painel, atualizada uma vez por segundo." />
+                        <TextBlock Classes="muted" MaxWidth="312" Text="{Binding LcdStatsText}" />
+                        <TextBlock Classes="muted" MaxWidth="312" IsVisible="{Binding !LcdAvailable}"
+                                   Text="A tela do water cooler não foi encontrada no USB." />
+                    </StackPanel>
+
+                    <ScrollViewer Grid.Column="1">
+                        <StackPanel Spacing="18" Margin="0,6,14,0" MaxWidth="520" HorizontalAlignment="Left">
+
+                            <StackPanel Spacing="10" IsEnabled="{Binding LcdAvailable}">
+                                <TextBlock Text="Painel" Classes="heading" />
+                                <CheckBox Content="Mostrar o painel na tela" IsChecked="{Binding LcdEnabled}" />
+                                <Grid ColumnDefinitions="150,*" ColumnSpacing="14">
+                                    <TextBlock Text="Brilho" VerticalAlignment="Center" />
+                                    <Slider Grid.Column="1" Minimum="5" Maximum="100" Value="{Binding LcdBrightness}" />
+                                </Grid>
+                                <CheckBox Content="Girar a imagem 180°" IsChecked="{Binding LcdFlipped}" />
+                                <TextBlock Classes="muted"
+                                           Text="O MACH1-LCD precisa estar fechado: os dois programas não conseguem usar a tela ao mesmo tempo." />
+                            </StackPanel>
+
+                            <Border Classes="rule" />
+
+                            <StackPanel Spacing="10">
+                                <TextBlock Text="Conteúdo" Classes="heading" />
+                                <ComboBox SelectedIndex="{Binding LcdPageMode}" HorizontalAlignment="Stretch">
+                                    <ComboBoxItem Content="Temperaturas e sensores" />
+                                    <ComboBoxItem Content="Curve Optimizer" />
+                                    <ComboBoxItem Content="Alternar entre as duas" />
+                                    <ComboBoxItem Content="Layout personalizado" />
+                                </ComboBox>
+                                <Button Content="Editar o layout personalizado…" Click="OnEditLayout" />
+                                <TextBlock Classes="muted"
+                                           Text="No editor você posiciona textos, sensores, barras, imagens e GIFs onde quiser." />
+                                <Grid ColumnDefinitions="*,118" ColumnSpacing="14">
+                                    <TextBlock Text="Ao alternar, trocar a cada (segundos)" VerticalAlignment="Center" TextWrapping="Wrap" />
+                                    <NumericUpDown Grid.Column="1" Value="{Binding LcdPageSeconds}" FormatString="0" Minimum="2" Maximum="120" />
+                                </Grid>
+                            </StackPanel>
+
+                            <Border Classes="rule" />
+
+                            <StackPanel Spacing="10">
+                                <TextBlock Text="Aparência" Classes="heading" />
+                                <TextBlock Text="Temas prontos" />
+                                <ItemsControl ItemsSource="{Binding LcdThemes}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:LcdThemeSwatch">
+                                            <!-- A amostra usa as cores do próprio tema: fundo, texto e uma barra na cor de destaque -->
+                                            <Button Classes="swatch" Margin="0,0,8,8"
+                                                    Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).ApplyLcdThemeCommand}"
+                                                    CommandParameter="{Binding}">
+                                                <Border Width="92" Height="54" CornerRadius="5" Background="{Binding Background}" Padding="9,7">
+                                                    <DockPanel>
+                                                        <Border DockPanel.Dock="Bottom" Height="5" CornerRadius="2.5" Background="{Binding Accent}"
+                                                                HorizontalAlignment="Left" Width="46" />
+                                                        <TextBlock Text="{Binding Name}" Foreground="{Binding Text}" FontSize="12.5"
+                                                                   FontFamily="{StaticResource Font.Display}" />
+                                                    </DockPanel>
+                                                </Border>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <TextBlock Text="Ou escolha cada cor" Margin="0,4,0,0" />
+                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="6">
+                                    <TextBlock Text="Cor do fundo" VerticalAlignment="Center" />
+                                    <ColorPicker Grid.Column="1" Color="{Binding LcdBackground}" IsAlphaEnabled="False" />
+                                    <TextBlock Grid.Row="1" Text="Cor do texto" VerticalAlignment="Center" />
+                                    <ColorPicker Grid.Row="1" Grid.Column="1" Color="{Binding LcdText}" IsAlphaEnabled="False" />
+                                    <TextBlock Grid.Row="2" Text="Cor das temperaturas e barras" VerticalAlignment="Center" />
+                                    <ColorPicker Grid.Row="2" Grid.Column="1" Color="{Binding LcdAccent}" IsAlphaEnabled="False" />
+                                </Grid>
+                                <TextBlock Classes="muted"
+                                           Text="Perto do limite a temperatura troca para as cores de atenção e crítica, que se ajustam mais abaixo, em Cores da temperatura." />
+                                <Button Content="Voltar ao visual padrão" Command="{Binding RestoreLcdAppearanceCommand}" />
+
+                                <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,6,0,0">
+                                    <Button Content="Escolher imagem, GIF ou vídeo de fundo…" Click="OnPickLcdImage" />
+                                    <Button Content="Remover" Command="{Binding ClearLcdImageCommand}" IsVisible="{Binding HasLcdImage}" />
+                                </StackPanel>
+                                <TextBlock Classes="muted" Text="{Binding LcdImageName}" />
+                                <StackPanel Classes="reveal" Spacing="6" IsVisible="{Binding HasLcdImage}">
+                                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
+                                        <TextBlock Text="Opacidade da cor de fundo sobre a imagem ou o vídeo" TextWrapping="Wrap" />
+                                        <TextBlock Grid.Column="1" Text="{Binding LcdImageDimText}" Classes="num" />
+                                    </Grid>
+                                    <Slider Minimum="0" Maximum="100" Value="{Binding LcdImageDim}" />
+                                    <TextBlock Classes="muted" Text="Em 0 % aparece só a imagem ou o vídeo; em 100 %, só a cor de fundo." />
+                                </StackPanel>
+                            </StackPanel>
+
+                            <Border Classes="rule" />
+
+                            <StackPanel Spacing="10">
+                                <TextBlock Text="Cores da temperatura" Classes="heading" />
+                                <CheckBox Content="Mudar a cor da temperatura conforme ela sobe" IsChecked="{Binding TempColorsEnabled}" />
+                                <Grid ColumnDefinitions="*,96,96" RowDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="6"
+                                      IsEnabled="{Binding TempColorsEnabled}">
+                                    <TextBlock Grid.Column="1" Text="Atenção" Classes="muted" />
+                                    <TextBlock Grid.Column="2" Text="Crítico" Classes="muted" />
+
+                                    <TextBlock Grid.Row="1" Text="Processador, a partir de (°C)" VerticalAlignment="Center" TextWrapping="Wrap" />
+                                    <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding CpuWarmAt}" FormatString="0" Minimum="30" Maximum="110" />
+                                    <NumericUpDown Grid.Row="1" Grid.Column="2" Value="{Binding CpuHotAt}" FormatString="0" Minimum="30" Maximum="110" />
+
+                                    <TextBlock Grid.Row="2" Text="Placa de vídeo, a partir de (°C)" VerticalAlignment="Center" TextWrapping="Wrap" />
+                                    <NumericUpDown Grid.Row="2" Grid.Column="1" Value="{Binding GpuWarmAt}" FormatString="0" Minimum="30" Maximum="110" />
+                                    <NumericUpDown Grid.Row="2" Grid.Column="2" Value="{Binding GpuHotAt}" FormatString="0" Minimum="30" Maximum="110" />
+
+                                    <TextBlock Grid.Row="3" Text="Cor" VerticalAlignment="Center" />
+                                    <ColorPicker Grid.Row="3" Grid.Column="1" Color="{Binding TempWarnColor}" IsAlphaEnabled="False" HorizontalAlignment="Left" />
+                                    <ColorPicker Grid.Row="3" Grid.Column="2" Color="{Binding TempHotColor}" IsAlphaEnabled="False" HorizontalAlignment="Left" />
+                                </Grid>
+                                <Button Content="Voltar ao automático" Command="{Binding ResetTempColorsCommand}" />
+                                <TextBlock Classes="muted"
+                                           Text="Abaixo da faixa de atenção, a temperatura fica na cor de destaque do tema. O automático usa o limite do seu processador: atenção 20 °C antes dele e crítico 7 °C antes. Vale para as páginas prontas da tela e para a leitura no topo desta janela." />
+                            </StackPanel>
+
+                            <Border Classes="rule" />
+
+                            <StackPanel Spacing="10">
+                                <TextBlock Text="Alerta de temperatura" Classes="heading" />
+                                <CheckBox Content="Piscar a tela em vermelho acima do limite" IsChecked="{Binding AlertEnabled}" />
+                                <Grid ColumnDefinitions="*,118" RowDefinitions="Auto,Auto" ColumnSpacing="14" RowSpacing="6"
+                                      IsEnabled="{Binding AlertEnabled}">
+                                    <TextBlock Text="Processador, em °C" VerticalAlignment="Center" />
+                                    <NumericUpDown Grid.Column="1" Value="{Binding AlertCpu}" FormatString="0" Minimum="40" Maximum="95" />
+                                    <TextBlock Grid.Row="1" Text="Placa de vídeo, em °C" VerticalAlignment="Center" />
+                                    <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding AlertGpu}" FormatString="0" Minimum="40" Maximum="90" />
+                                </Grid>
+                            </StackPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+
+            <!-- ============ Benchmark ============ -->
+            <TabItem Header="Benchmark">
+                <Grid ColumnDefinitions="310,*" ColumnSpacing="34">
+
+                    <ScrollViewer>
+                        <StackPanel Spacing="18" Margin="0,6,14,0">
+
+                            <StackPanel Spacing="10">
+                                <TextBlock Text="Novo teste" Classes="heading" />
+                                <TextBlock Classes="muted"
+                                           Text="Mede o PC como ele está agora. Rode uma vez antes e outra depois de mudar a curva ou a BIOS, e compare. Feche jogos e programas pesados antes." />
+                                <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" ColumnSpacing="14" RowSpacing="6"
+                                      IsEnabled="{Binding IsNotBenchmarking}">
+                                    <TextBlock Text="Nome" VerticalAlignment="Center" />
+                                    <TextBox Grid.Column="1" Text="{Binding BenchName}" />
+                                    <TextBlock Grid.Row="1" Text="Segundos por etapa" VerticalAlignment="Center" />
+                                    <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding BenchSeconds}" FormatString="0"
+                                                   Minimum="5" Maximum="300" Increment="5" />
+                                </Grid>
+                                <TextBlock Classes="muted" Text="Sem nome, o teste leva o da curva em vigor, por exemplo &quot;Curva -15&quot;." />
+                                <CheckBox Content="Testar cada núcleo sozinho" IsChecked="{Binding BenchPerCore}" IsEnabled="{Binding IsNotBenchmarking}" />
+                                <CheckBox Content="Medir a cópia de memória" IsChecked="{Binding BenchMemory}" IsEnabled="{Binding IsNotBenchmarking}" />
+                                <Button Classes="primary" Content="Rodar benchmark" Command="{Binding RunBenchmarkCommand}"
+                                        IsVisible="{Binding IsNotBenchmarking}" IsEnabled="{Binding IsReady}" />
+                                <Button Content="Cancelar" Command="{Binding CancelBenchmarkCommand}" IsVisible="{Binding IsBenchmarking}" />
+                                <ProgressBar Value="{Binding BenchProgress}" Maximum="100" IsVisible="{Binding IsBenchmarking}" />
+                                <TextBlock Classes="muted" Text="{Binding BenchStatus}" />
+                            </StackPanel>
+
+                            <Border Classes="rule" />
+
+                            <StackPanel Spacing="10">
+                                <TextBlock Text="Testes salvos" Classes="heading" />
+                                <TextBlock Classes="muted" Text="Marque até três para comparar. Ainda não há testes salvos."
+                                           IsVisible="{Binding !Benchmarks.Count}" />
+                                <TextBlock Classes="muted" Text="Marque até três para comparar." IsVisible="{Binding Benchmarks.Count}" />
+                                <ItemsControl ItemsSource="{Binding Benchmarks}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:BenchmarkRunViewModel">
+                                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" Margin="0,4">
+                                                <CheckBox IsChecked="{Binding IsSelected}" VerticalAlignment="Center" MinWidth="0" />
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock Text="{Binding Subtitle}" Classes="muted" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
+                                                </StackPanel>
+                                                <Button Grid.Column="2" Content="Apagar" VerticalAlignment="Center"
+                                                        Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).RemoveBenchmarkCommand}"
+                                                        CommandParameter="{Binding}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- Comparação -->
+                    <ScrollViewer Grid.Column="1">
+                        <StackPanel Margin="0,0,14,0" Spacing="12">
+                            <Border Classes="panel" IsVisible="{Binding HasNoComparison}">
+                                <TextBlock Classes="muted"
+                                           Text="Rode um benchmark ou marque testes salvos para ver os gráficos aqui." />
+                            </Border>
+
+                            <Border x:Name="ComparisonPanel" Classes="panel reveal" IsVisible="{Binding HasComparison}">
+                                <StackPanel Spacing="8">
+
+                                    <!-- Legenda: vale para todos os gráficos abaixo -->
+                                    <ItemsControl ItemsSource="{Binding Compared}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel Orientation="Horizontal" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:BenchmarkRunViewModel">
+                                                <StackPanel Orientation="Horizontal" Spacing="7" Margin="0,0,22,4">
+                                                    <Border Width="12" Height="12" CornerRadius="3" Background="{Binding Swatch}" VerticalAlignment="Center" />
+                                                    <TextBlock Text="{Binding Title}" VerticalAlignment="Center" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <TextBlock Classes="muted" Text="As porcentagens são a diferença para o primeiro teste da legenda." />
+
+                                    <TextBlock Text="1 núcleo, em pontos" Classes="charttitle" />
+                                    <c:ScoreBars Series="{Binding SingleBars}" />
+
+                                    <TextBlock Text="Todos os núcleos, em pontos" Classes="charttitle" />
+                                    <c:ScoreBars Series="{Binding MultiBars}" />
+
+                                    <TextBlock Text="Cópia de memória, em GB/s" Classes="charttitle" />
+                                    <c:ScoreBars Series="{Binding MemoryBars}" Decimals="1" />
+
+                                    <StackPanel Spacing="8" IsVisible="{Binding HasCoreDots}">
+                                        <TextBlock Text="Cada núcleo sozinho, em pontos" Classes="charttitle" />
+                                        <c:DotPlot Series="{Binding CoreDots}" Height="190" />
+                                        <TextBlock Classes="muted" Text="O eixo deste gráfico não começa no zero, para as diferenças entre núcleos aparecerem." />
+                                    </StackPanel>
+
+                                    <TextBlock Text="Temperatura do processador durante o teste, em °C" Classes="charttitle" />
+                                    <c:TimeChart Series="{Binding TemperatureLines}" Markers="{Binding PhaseMarkers}" Unit="°C" Decimals="1" Height="200" />
+
+                                    <TextBlock Text="Clock efetivo do núcleo mais rápido, em MHz" Classes="charttitle" />
+                                    <c:TimeChart Series="{Binding ClockLines}" Markers="{Binding PhaseMarkers}" Unit="MHz" Height="200" />
+
+                                    <TextBlock Classes="muted" Text="{Binding ComparisonNote}" />
+
+                                    <!-- Os mesmos números em tabela -->
+                                    <TextBlock Text="Resumo" Classes="charttitle" />
+                                    <Grid ColumnDefinitions="20,*,70,80,70,70,80,80,70" ColumnSpacing="8">
+                                        <TextBlock Grid.Column="1" Text="Teste" Classes="muted" />
+                                        <TextBlock Grid.Column="2" Text="1 núcleo" Classes="muted" HorizontalAlignment="Right" />
+                                        <TextBlock Grid.Column="3" Text="Todos" Classes="muted" HorizontalAlignment="Right" />
+                                        <TextBlock Grid.Column="4" Text="GB/s" Classes="muted" HorizontalAlignment="Right" />
+                                        <TextBlock Grid.Column="5" Text="°C máx." Classes="muted" HorizontalAlignment="Right" />
+                                        <TextBlock Grid.Column="6" Text="MHz, 1 núcleo" Classes="muted" HorizontalAlignment="Right" TextWrapping="NoWrap" />
+                                        <TextBlock Grid.Column="7" Text="MHz, todos" Classes="muted" HorizontalAlignment="Right" TextWrapping="NoWrap" />
+                                        <TextBlock Grid.Column="8" Text="W, todos" Classes="muted" HorizontalAlignment="Right" />
+                                    </Grid>
+                                    <ItemsControl ItemsSource="{Binding BenchmarkRows}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:BenchmarkRow">
+                                                <Grid ColumnDefinitions="20,*,70,80,70,70,80,80,70" ColumnSpacing="8" Margin="0,3">
+                                                    <Border Width="12" Height="12" CornerRadius="3" Background="{Binding Swatch}"
+                                                            HorizontalAlignment="Left" VerticalAlignment="Center" />
+                                                    <TextBlock Grid.Column="1" Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock Grid.Column="2" Text="{Binding Single}" HorizontalAlignment="Right" />
+                                                    <TextBlock Grid.Column="3" Text="{Binding Multi}" HorizontalAlignment="Right" />
+                                                    <TextBlock Grid.Column="4" Text="{Binding Memory}" HorizontalAlignment="Right" />
+                                                    <TextBlock Grid.Column="5" Text="{Binding Temperature}" HorizontalAlignment="Right" />
+                                                    <TextBlock Grid.Column="6" Text="{Binding SingleClock}" HorizontalAlignment="Right" />
+                                                    <TextBlock Grid.Column="7" Text="{Binding MultiClock}" HorizontalAlignment="Right" />
+                                                    <TextBlock Grid.Column="8" Text="{Binding Watts}" HorizontalAlignment="Right" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+
+                            <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding HasComparison}">
+                                <Button Content="Salvar os gráficos como imagem…" Click="OnExportComparison" />
+                            </StackPanel>
+                            <TextBlock Classes="muted" IsVisible="{Binding HasComparison}"
+                                       Text="Os pontos são uma escala própria deste app (cerca de 1000 para um núcleo do 9800X3D) e não se comparam com Cinebench ou Geekbench. Diferenças abaixo de 1 % ficam dentro da variação normal entre duas rodadas." />
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+
+            <!-- ============ Geral ============ -->
+            <TabItem Header="Geral">
+                <ScrollViewer>
+                    <StackPanel Spacing="18" Margin="0,6,14,0" MaxWidth="560" HorizontalAlignment="Left">
+
+                        <StackPanel Spacing="10" IsEnabled="{Binding CanTune}">
+                            <TextBlock Text="Perfil" Classes="heading" />
+                            <Button Content="Salvar perfil" Command="{Binding SaveProfileCommand}" />
+                            <TextBlock Classes="muted"
+                                       Text="Guarda as margens e os limites que estão na aba Processador. As outras opções são gravadas sozinhas quando você as muda." />
+                        </StackPanel>
+
+                        <Border Classes="rule" />
+
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Inicialização" Classes="heading" />
+                            <CheckBox Content="Abrir com o Windows, na bandeja" IsChecked="{Binding StartWithWindows}" />
+                            <CheckBox Content="Aplicar a curva do perfil salvo ao abrir com o Windows" IsChecked="{Binding ApplyOnStart}" />
+                            <TextBlock Classes="muted"
+                                       Text="Só ative a aplicação automática depois de testar a estabilidade por alguns dias. Se o PC cair até 3 minutos depois dela, a curva deixa de ser aplicada até você salvar um perfil novo." />
+                            <CheckBox Content="Ao fechar a janela, continuar na bandeja" IsChecked="{Binding CloseToTray}" />
+                            <TextBlock Classes="muted"
+                                       Text="Na bandeja, a tela do water cooler e os perfis por jogo continuam funcionando. Para encerrar, clique com o botão direito no ícone e escolha Sair." />
+                        </StackPanel>
+
+                        <Border Classes="rule" />
+
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Gravar na BIOS" Classes="heading" />
+                            <TextBlock Classes="muted"
+                                       Text="Para tornar permanentes os valores que ficaram estáveis, reinicie direto na tela da BIOS e digite-os lá." />
+                            <Button Content="Reiniciar na BIOS…" Command="{Binding AskRebootCommand}"
+                                    IsVisible="{Binding !ConfirmingReboot}" />
+                            <StackPanel Classes="reveal" Orientation="Horizontal" Spacing="8" IsVisible="{Binding ConfirmingReboot}">
+                                <Button Content="Reiniciar agora" Command="{Binding RebootToUefiCommand}" />
+                                <Button Content="Cancelar" Command="{Binding CancelRebootCommand}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+
+        <!-- Histórico do que foi aplicado -->
+        <Border Grid.Row="3" Classes="enter-third" BorderBrush="{StaticResource Brush.Line}" BorderThickness="0,1,0,0" Height="92" Padding="0,10,0,0">
+            <Panel>
+                <TextBlock Classes="muted" Text="Nada aplicado nesta sessão. O que você aplicar aparece aqui."
+                           IsVisible="{Binding !Log.Count}" />
+                <ScrollViewer>
+                    <ItemsControl ItemsSource="{Binding Log}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <TextBlock Text="{Binding}" Classes="muted" TextWrapping="NoWrap" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Panel>
+        </Border>
+    </Grid>
+    </DockPanel>
+</Window>

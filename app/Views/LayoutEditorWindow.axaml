@@ -1,0 +1,129 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Mach1DriverCustom.ViewModels"
+        xmlns:c="using:Mach1DriverCustom.Controls"
+        x:Class="Mach1DriverCustom.Views.LayoutEditorWindow"
+        x:DataType="vm:MainViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Width="900" Height="800" MinWidth="820" MinHeight="620"
+        WindowStartupLocation="CenterOwner"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaTitleBarHeightHint="40"
+        Title="Editor de layout da tela">
+
+    <DockPanel>
+    <Border DockPanel.Dock="Top" Height="36" IsHitTestVisible="False" />
+
+    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="30" Margin="26,4,12,22">
+
+        <!-- A tela, em metade do tamanho real -->
+        <StackPanel Spacing="10">
+            <Border Classes="panel" Padding="12">
+                <c:LayoutCanvas Width="360" Height="640"
+                                Source="{Binding LcdPreview}"
+                                Elements="{Binding LayoutElements}"
+                                Selected="{Binding SelectedElement}"
+                                Flipped="{Binding LcdFlipped}" />
+            </Border>
+            <TextBlock Classes="muted" MaxWidth="384"
+                       Text="Clique em um elemento para selecionar e arraste para mover. O quadradinho no canto inferior direito redimensiona. As setas movem 1 pixel; com Shift, 10." />
+        </StackPanel>
+
+        <ScrollViewer Grid.Column="1">
+            <StackPanel Spacing="18" Margin="0,0,16,0">
+
+                <StackPanel Spacing="10">
+                    <TextBlock Text="Adicionar" Classes="heading" />
+                    <WrapPanel>
+                        <Button Content="Texto" Command="{Binding AddTextElementCommand}" Margin="0,0,8,8" />
+                        <Button Content="Sensor" Command="{Binding AddSensorElementCommand}" Margin="0,0,8,8" />
+                        <Button Content="Barra" Command="{Binding AddBarElementCommand}" Margin="0,0,8,8" />
+                        <Button Content="Imagem ou GIF…" Click="OnAddImage" Margin="0,0,8,8" />
+                    </WrapPanel>
+                </StackPanel>
+
+                <Border Classes="rule" />
+
+                <StackPanel Spacing="10">
+                    <TextBlock Text="Elementos" Classes="heading" />
+                    <TextBlock Classes="muted" Text="O de baixo na lista é desenhado por cima dos outros." />
+                    <ListBox ItemsSource="{Binding LayoutElements}" SelectedItem="{Binding SelectedElement}"
+                             MaxHeight="210" Background="{StaticResource Brush.Surface}" CornerRadius="6">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:LayoutElementViewModel">
+                                <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <WrapPanel IsEnabled="{Binding HasSelectedElement}">
+                        <Button Content="Trazer para frente" Command="{Binding BringElementForwardCommand}" Margin="0,0,8,8" />
+                        <Button Content="Enviar para trás" Command="{Binding SendElementBackwardCommand}" Margin="0,0,8,8" />
+                        <Button Content="Duplicar" Command="{Binding DuplicateElementCommand}" Margin="0,0,8,8" />
+                        <Button Content="Remover" Command="{Binding RemoveElementCommand}" Margin="0,0,8,8" />
+                    </WrapPanel>
+                </StackPanel>
+
+                <Border Classes="rule" />
+
+                <StackPanel Classes="reveal" Spacing="10" IsVisible="{Binding HasSelectedElement}">
+                    <TextBlock Text="Elemento selecionado" Classes="heading" />
+
+                    <StackPanel Spacing="6" IsVisible="{Binding SelectedElement.IsText, FallbackValue=False}">
+                        <TextBlock Text="Texto" />
+                        <TextBox Text="{Binding SelectedElement.Text}" />
+                    </StackPanel>
+
+                    <StackPanel Spacing="6" IsVisible="{Binding SelectedElement.HasSensor, FallbackValue=False}">
+                        <TextBlock Text="Sensor" />
+                        <ComboBox ItemsSource="{Binding SensorNames}" SelectedIndex="{Binding SelectedElement.Sensor}"
+                                  HorizontalAlignment="Stretch" />
+                    </StackPanel>
+
+                    <StackPanel Spacing="6" IsVisible="{Binding SelectedElement.IsImage, FallbackValue=False}">
+                        <TextBlock Text="Arquivo" />
+                        <TextBlock Classes="muted" Text="{Binding SelectedElement.Path}" />
+                    </StackPanel>
+
+                    <Grid ColumnDefinitions="Auto,*,Auto,*" RowDefinitions="Auto,Auto" ColumnSpacing="10" RowSpacing="6">
+                        <TextBlock Text="X" VerticalAlignment="Center" />
+                        <NumericUpDown Grid.Column="1" Value="{Binding SelectedElement.X}" FormatString="0" Minimum="-2000" Maximum="2000" />
+                        <TextBlock Grid.Column="2" Text="Y" VerticalAlignment="Center" />
+                        <NumericUpDown Grid.Column="3" Value="{Binding SelectedElement.Y}" FormatString="0" Minimum="-2000" Maximum="2000" />
+                        <TextBlock Grid.Row="1" Text="Largura" VerticalAlignment="Center" />
+                        <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding SelectedElement.Width}" FormatString="0" Minimum="8" Maximum="2000" />
+                        <TextBlock Grid.Row="1" Grid.Column="2" Text="Altura" VerticalAlignment="Center" />
+                        <NumericUpDown Grid.Row="1" Grid.Column="3" Value="{Binding SelectedElement.Height}" FormatString="0" Minimum="8" Maximum="2000" />
+                    </Grid>
+                    <TextBlock Classes="muted" Text="Medidas em pixels da tela, que tem 720 de largura por 1280 de altura. Em texto e sensor, a altura define o tamanho da letra." />
+
+                    <StackPanel Spacing="6" IsVisible="{Binding SelectedElement.HasAlign, FallbackValue=False}">
+                        <TextBlock Text="Alinhamento dentro da caixa" />
+                        <ComboBox SelectedIndex="{Binding SelectedElement.Align}" HorizontalAlignment="Stretch">
+                            <ComboBoxItem Content="À esquerda" />
+                            <ComboBoxItem Content="Centralizado" />
+                            <ComboBoxItem Content="À direita" />
+                        </ComboBox>
+                    </StackPanel>
+
+                    <StackPanel Spacing="6" IsVisible="{Binding SelectedElement.HasColor, FallbackValue=False}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <CheckBox Content="Usar uma cor própria" IsChecked="{Binding SelectedElement.UseCustomColor}" />
+                            <ColorPicker Grid.Column="1" Color="{Binding SelectedElement.Color}" IsAlphaEnabled="False"
+                                         IsEnabled="{Binding SelectedElement.UseCustomColor, FallbackValue=False}" />
+                        </Grid>
+                        <TextBlock Classes="muted" Text="Desmarcado, o elemento segue as cores escolhidas na aba da tela." />
+                    </StackPanel>
+                </StackPanel>
+
+                <Border Classes="rule" IsVisible="{Binding HasSelectedElement}" />
+
+                <StackPanel Spacing="10">
+                    <Button Content="Recomeçar do modelo" Command="{Binding ApplyLayoutTemplateCommand}" />
+                    <TextBlock Classes="muted"
+                               Text="Recomeçar apaga o layout atual. A cor, a imagem ou o vídeo de fundo continuam sendo os da aba da tela. O layout é gravado ao fechar esta janela." />
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+    </DockPanel>
+</Window>

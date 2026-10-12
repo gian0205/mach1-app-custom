@@ -1,0 +1,135 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="using:Mach1DriverCustom.Controls">
+
+    <Style Selector="Window">
+        <Setter Property="Background" Value="{StaticResource Brush.Window}" />
+        <Setter Property="Foreground" Value="{StaticResource Brush.Text}" />
+        <Setter Property="FontSize" Value="13.5" />
+    </Style>
+
+    <!-- Tipografia -->
+    <Style Selector="TextBlock.display">
+        <Setter Property="FontFamily" Value="{StaticResource Font.Display}" />
+        <Setter Property="FontSize" Value="27" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="TextBlock.readout">
+        <Setter Property="Foreground" Value="{StaticResource Brush.Text}" />
+        <Setter Property="FontFamily" Value="{StaticResource Font.Display}" />
+        <Setter Property="FontSize" Value="44" />
+        <Setter Property="FontWeight" Value="Light" />
+    </Style>
+    <Style Selector="TextBlock.readout.cool">
+        <Setter Property="Foreground" Value="{StaticResource Brush.Cool}" />
+    </Style>
+    <Style Selector="TextBlock.readout.warm">
+        <Setter Property="Foreground" Value="{StaticResource Brush.Warm}" />
+    </Style>
+    <Style Selector="TextBlock.readout.hot">
+        <Setter Property="Foreground" Value="{StaticResource Brush.Critical}" />
+    </Style>
+    <Style Selector="TextBlock.heading">
+        <Setter Property="FontFamily" Value="{StaticResource Font.Display}" />
+        <Setter Property="FontSize" Value="18" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="TextBlock.charttitle">
+        <Setter Property="FontFamily" Value="{StaticResource Font.Display}" />
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="Margin" Value="0,12,0,0" />
+    </Style>
+    <Style Selector="TextBlock.num">
+        <Setter Property="FontFamily" Value="{StaticResource Font.Display}" />
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="TextBlock.muted">
+        <Setter Property="Foreground" Value="{StaticResource Brush.TextMuted}" />
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="LineHeight" Value="18" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <!-- Superfícies: só o painel da curva é elevado; o resto fica direto sobre a janela. -->
+    <Style Selector="Border.panel">
+        <Setter Property="Background" Value="{StaticResource Brush.Surface}" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="22,20" />
+    </Style>
+    <Style Selector="Border.panel:disabled">
+        <Setter Property="Opacity" Value="0.5" />
+    </Style>
+    <Style Selector="StackPanel.section:disabled">
+        <Setter Property="Opacity" Value="0.5" />
+    </Style>
+    <Style Selector="Border.rule">
+        <Setter Property="Height" Value="1" />
+        <Setter Property="Background" Value="{StaticResource Brush.Line}" />
+    </Style>
+    <Style Selector="Border.notice">
+        <Setter Property="Background" Value="{StaticResource Brush.Surface}" />
+        <Setter Property="BorderBrush" Value="{StaticResource Brush.Warm}" />
+        <Setter Property="BorderThickness" Value="3,0,0,0" />
+        <Setter Property="CornerRadius" Value="2,6,6,2" />
+        <Setter Property="Padding" Value="16,12" />
+        <Setter Property="Margin" Value="0,16,0,0" />
+    </Style>
+
+    <Style Selector="NumericUpDown">
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!-- Abas -->
+    <Style Selector="TabItem">
+        <Setter Property="FontFamily" Value="{StaticResource Font.Display}" />
+        <Setter Property="FontSize" Value="17" />
+        <Setter Property="Padding" Value="0,6,22,6" />
+        <Setter Property="MinHeight" Value="0" />
+    </Style>
+
+    <!-- Amostra de tema: o botão é só a moldura em volta da amostra -->
+    <Style Selector="Button.swatch">
+        <Setter Property="Padding" Value="2" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="{StaticResource Brush.Line}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="7" />
+    </Style>
+    <Style Selector="Button.swatch:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="{StaticResource Brush.Text}" />
+    </Style>
+
+    <!-- Ação principal -->
+    <Style Selector="Button.primary">
+        <Setter Property="Background" Value="{StaticResource Brush.Cool}" />
+        <Setter Property="Foreground" Value="{StaticResource Brush.OnAccent}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Padding" Value="22,7" />
+    </Style>
+    <Style Selector="Button.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#9AD3F6" />
+        <Setter Property="Foreground" Value="{StaticResource Brush.OnAccent}" />
+    </Style>
+    <Style Selector="Button.primary:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#62AEDD" />
+        <Setter Property="Foreground" Value="{StaticResource Brush.OnAccent}" />
+    </Style>
+
+    <!-- Barra da curva -->
+    <Style Selector="c|MarginBar">
+        <Setter Property="Height" Value="20" />
+        <Setter Property="TrackBrush" Value="{StaticResource Brush.Track}" />
+        <Setter Property="AxisBrush" Value="{StaticResource Brush.TextMuted}" />
+        <Setter Property="NegativeBrush" Value="{StaticResource Brush.Cool}" />
+        <Setter Property="PositiveBrush" Value="{StaticResource Brush.Warm}" />
+        <Setter Property="AppliedBrush" Value="{StaticResource Brush.Text}" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="Value" Duration="0:0:0.18" Easing="CubicEaseOut" />
+            </Transitions>
+        </Setter>
+    </Style>
+</Styles>

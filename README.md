@@ -1,0 +1,96 @@
+# MACH1 Driver Custom
+
+App .NET 10 + Avalonia que ajusta o processador Ryzen de dentro do Windows e controla a tela LCD do water cooler MACH1.
+
+## O que faz
+
+**Processador** (direto no SMU; nada é gravado na BIOS, tudo vale até o reboot)
+
+- Curve Optimizer por núcleo (-40 a +10) e limites de PBO (PPT, TDC, EDC)
+- Teste de estabilidade: carrega um núcleo por vez e zera a margem do que errar
+- Perfis por jogo: uma margem para todos os núcleos enquanto um executável está aberto
+
+**Benchmark**
+
+- Pontuação com 1 núcleo, com todos, de cada núcleo sozinho e cópia de memória, lendo temperatura, clock efetivo e potência durante o teste
+- Histórico em disco e comparação de até três testes em gráficos, com exportação em PNG
+- A pontuação é uma escala própria (cerca de 1000 para um núcleo do 9800X3D); serve para comparar o mesmo PC antes e depois de um ajuste
+
+**Tela do water cooler** (USB `1600:3005`, 720x1280)
+
+- Página de temperaturas e sensores (CPU, GPU, uso, memória, VRAM, consumo da GPU) e página do Curve Optimizer, fixas ou alternando
+- Cores à escolha, imagem, GIF ou vídeo de fundo, brilho e giro de 180°
+- Vídeo usa o `ffmpeg.exe` que vem com o MACH1-LCD (ou um na pasta do app ou no PATH)
+- Alerta: a tela pisca em vermelho acima de um limite de temperatura
+- Layout personalizado: um editor para posicionar textos, sensores, barras, imagens e GIFs com o mouse
+
+**Geral**
+
+- Fica na bandeja e pode abrir junto com o Windows, aplicando a curva salva
+- Atalho para reiniciar direto na tela da BIOS
+- Transições e animações curtas na interface (`app/Styles/Motion.axaml`), desligadas quando o Windows está com as animações desativadas
+
+## Requisitos
+
+- Windows 10/11 x64, executado como administrador (o app pede elevação)
+- .NET 10 SDK
+- Driver [PawnIO](https://pawnio.eu/):
+
+```bash
+winget install namazso.PawnIO
+```
+
+- Placa NVIDIA para os sensores de GPU (usa a NVML do driver)
+- O MACH1-LCD precisa estar fechado para o app usar a tela
+
+## Em que máquinas funciona
+
+- **Tela do water cooler, sensores e benchmark**: qualquer PC com Windows 10/11 de 64 bits.
+- **Curve Optimizer, limites de PBO, teste de estabilidade e perfis por jogo**: só Ryzen da série 5000 em diante. Em outros processadores essas partes ficam desabilitadas, com um aviso.
+- **Temperatura do processador**: exige o driver PawnIO. Em Ryzen suportado vem do SMU; nos demais (Intel, por exemplo), da LibreHardwareMonitor.
+- **Placa de vídeo**: NVIDIA pela NVML; AMD e Intel pela LibreHardwareMonitor.
+- A faixa de margem (-40 em Zen 4/5, -30 antes), o limite de temperatura e os limites de PBO iniciais vêm do próprio processador.
+- A tela precisa ser a de identificador USB `1600:3005` (720x1280); outros modelos ainda não são reconhecidos.
+
+### Levar para outro PC
+
+Rode `publicar.cmd`. Ele gera a pasta `dist`, com o app e o .NET juntos (cerca de 215 MB). Copie a pasta inteira, instale o PawnIO na outra máquina e abra `Mach1DriverCustom.exe` como administrador. O perfil e o histórico não vão junto: ficam em `%AppData%` de cada máquina.
+
+## Compilar e rodar
+
+```bash
+dotnet run -c Release --project app
+```
+
+Se a pasta do projeto tiver um caminho muito longo, a compilação falha com `MSB3030`. Mova o projeto para um caminho curto ou passe `--artifacts-path C:\rtb`.
+
+Argumentos:
+
+- `--edit-layout` abre direto o editor de layout da tela
+- A variável de ambiente `MACH1_GENERIC=1` simula um PC sem Ryzen suportado e sem NVIDIA, para testar esse caminho
+- `--tray` abre só na bandeja (é como a tarefa agendada chama o app)
+- `--tab N` abre direto na aba N (0 a 3)
+- `--bench <segundos> <arquivo.json>` roda o benchmark sem janela e grava o resultado
+- `--lcd-preview <pasta> [imagem]` grava as páginas do painel em arquivos, com valores de exemplo, sem tocar em hardware
+
+## Estrutura
+
+- `app/` — o aplicativo (Avalonia, MVVM)
+  - `Services/Machine.cs` — o que há neste PC e de onde vem cada sensor
+  - `Services/CpuTuner.cs` — comandos do SMU (só Ryzen suportado)
+  - `Services/GenericSensors.cs` — sensores pela LibreHardwareMonitor
+  - `Services/LcdDevice.cs` — protocolo da tela (documentado no topo do arquivo)
+  - `Services/LcdRenderer.cs` e `LcdService.cs` — desenho do painel e envio
+  - `Services/LcdBackground.cs` e `VideoDecoder.cs` — fundo com imagem, GIF ou vídeo
+  - `Services/BenchmarkRunner.cs` e `EffectiveClock.cs` — benchmark e clock efetivo
+  - `Controls/LayoutCanvas.cs` e `Views/LayoutEditorWindow.axaml` — editor de layout
+  - `Controls/ScoreBars.cs`, `DotPlot.cs`, `TimeChart.cs` — gráficos
+  - `Services/StabilityTester.cs`, `StartupGuard.cs`, `StartupTask.cs`
+  - `ViewModels/MainViewModel*.cs` — uma parte por área (processador, tela, teste, jogos, inicialização)
+- `ext/zsc/` — cópia do código da [ZenStates-Core](https://github.com/irusanov/ZenStates-Core) (GPL-3.0)
+
+As opções e o perfil ficam em `%AppData%\Mach1DriverCustom\profile.json`.
+
+## Licença
+
+O app referencia a ZenStates-Core, que é GPL-3.0; se for distribuir o binário, ele precisa seguir a mesma licença.
