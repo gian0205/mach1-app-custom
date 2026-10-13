@@ -14,4 +14,4 @@ O MACH1 custom app usa ou acompanha os componentes abaixo. Cada um segue a licen
 | [CommunityToolkit.Mvvm](https://github.com/CommunityToolkit/dotnet) | Estrutura dos view models | MIT |
 | .NET | Plataforma; acompanha o instalador | MIT |
 
-Como o app incorpora a ZenStates-Core (GPL-3.0), a distribuição do executável precisa seguir a GPL-3.0, o que inclui oferecer o código-fonte a quem o receber.
+Como o app incorpora a ZenStates-Core (GPL-3.0), o MACH1 custom app inteiro é distribuído sob a GPL-3.0 (arquivo `LICENSE`). O código-fonte está em https://github.com/gian0205/mach1-app-custom.

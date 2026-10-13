@@ -124,4 +124,8 @@ As opções e o perfil ficam em `%AppData%\Mach1CustomApp\profile.json`.
 
 ## Licença
 
-O app referencia a ZenStates-Core, que é GPL-3.0; se for distribuir o binário, ele precisa seguir a mesma licença.
+O MACH1 custom app é software livre, distribuído sob a [GNU General Public License, versão 3](LICENSE). Você pode usar, estudar, modificar e redistribuir o app nos termos dela; ele vem sem nenhuma garantia.
+
+A escolha segue a da ZenStates-Core, que é GPL-3.0 e faz parte do executável. As licenças dos demais componentes estão em [LICENCAS.md](LICENCAS.md).
+
+Este é um projeto independente, sem vínculo com a fabricante do water cooler MACH1.
