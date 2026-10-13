@@ -75,6 +75,7 @@ public partial class MainViewModel : ViewModelBase, IDisposable
         LcdSidewaysSetting = LcdScreen.Sideways;
 
         _lcd = new LcdService();
+        _rgb.DevicesChanged += () => _rgbRelist = true;
         _lcd.DeviceFailed += OnLcdDeviceFailed;
     }
 

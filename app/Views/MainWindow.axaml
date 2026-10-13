@@ -698,13 +698,13 @@
                             <StackPanel Spacing="8">
                                 <TextBlock Text="Como funciona" Classes="heading" />
                                 <TextBlock Classes="muted" TextWrapping="Wrap"
-                                           Text="O app não fala direto com os LEDs: ele manda a cor para o OpenRGB, que conhece a placa-mãe, a memória, a placa de vídeo e os controladores. O OpenRGB precisa estar instalado e aberto." />
+                                           Text="O app não fala direto com os LEDs: ele manda a cor para o OpenRGB, que conhece a placa-mãe, a memória, a placa de vídeo e os controladores. O que o OpenRGB não encontra, o app não controla." />
                             </StackPanel>
                             <Border Classes="rule" />
                             <StackPanel Spacing="8">
-                                <TextBlock Text="Preparar o OpenRGB" Classes="heading" />
+                                <TextBlock Text="O OpenRGB" Classes="heading" />
                                 <TextBlock Classes="muted" TextWrapping="Wrap"
-                                           Text="1. Instale o OpenRGB (openrgb.org) e abra como administrador.&#10;2. Confira se ele lista os seus dispositivos.&#10;3. Na aba SDK Server, clique em Start Server. A porta padrão é 6742.&#10;4. Para não repetir isso, ligue em Settings as opções de abrir com o Windows e de iniciar o servidor." />
+                                           Text="O instalador deste app oferece o OpenRGB 1.0, que roda como serviço do Windows e já sobe pronto: não é preciso abrir nada.&#10;&#10;Se você usa uma versão anterior à 1.0, abra o OpenRGB como administrador e, na aba SDK Server, clique em Start Server. A porta padrão é 6742." />
                             </StackPanel>
                             <Border Classes="rule" />
                             <StackPanel Spacing="8">

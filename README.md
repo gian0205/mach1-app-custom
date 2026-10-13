@@ -39,7 +39,7 @@ App .NET 10 + Avalonia que ajusta o processador Ryzen de dentro do Windows, cont
 
 **LEDs RGB**
 
-- Cor dos LEDs do PC pelo [OpenRGB](https://openrgb.org/), que precisa estar aberto com o servidor SDK ligado: cor fixa, a cor do tema da tela ou conforme a temperatura do processador
+- Cor dos LEDs do PC pelo [OpenRGB](https://openrgb.org/), que o instalador oferece junto: cor fixa, a cor do tema da tela ou conforme a temperatura do processador
 
 **Tela do water cooler** (USB `1600:3005`, 720x1280)
 
@@ -71,7 +71,7 @@ winget install namazso.PawnIO
 
 ## Instalar
 
-Baixe o `MACH1-custom-app-setup-<versão>.exe` na página de releases do repositório e execute. O instalador já leva o .NET, instala o driver PawnIO se ele ainda não estiver na máquina e coloca um `ffmpeg.exe` ao lado do app para o vídeo de fundo. Na desinstalação, o PawnIO e as suas configurações em `%AppData%\Mach1CustomApp` ficam.
+Baixe o `MACH1-custom-app-setup-<versão>.exe` na página de releases do repositório e execute. O instalador já leva o .NET, instala o driver PawnIO se ele ainda não estiver na máquina, coloca um `ffmpeg.exe` ao lado do app para o vídeo de fundo e oferece o OpenRGB 1.0, usado pela aba LEDs. Na desinstalação, o PawnIO, o OpenRGB e as suas configurações em `%AppData%\Mach1CustomApp` ficam.
 
 Para gerar o instalador a partir do código, veja `gerar-instalador.cmd` e `installer/setup.iss`. As licenças dos componentes de terceiros estão em `LICENCAS.md`.
 

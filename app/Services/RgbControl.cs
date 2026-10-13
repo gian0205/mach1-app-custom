@@ -1,6 +1,7 @@
 using OpenRGB.NET;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Mach1CustomApp.Services;
@@ -9,9 +10,11 @@ namespace Mach1CustomApp.Services;
 public sealed record RgbDevice(int Index, string Name, int LedCount);
 
 /// <summary>
-/// Manda cores para os LEDs do PC pelo servidor SDK do OpenRGB, que precisa estar aberto nesta
-/// máquina. O app não fala com os LEDs direto: quem conhece cada placa, memória e controlador é o
-/// OpenRGB. As chamadas são serializadas, porque o servidor atende um comando por vez.
+/// Manda cores para os LEDs do PC pelo servidor SDK do OpenRGB, que precisa estar rodando nesta
+/// máquina. O OpenRGB 1.0 instala um serviço do Windows que já sobe com o servidor ligado; nas
+/// versões anteriores é preciso abrir o programa e ligar o servidor. O app não fala com os LEDs
+/// direto: quem conhece cada placa, memória e controlador é o OpenRGB. As chamadas são
+/// serializadas, porque o servidor atende um comando por vez.
 /// </summary>
 public sealed class RgbControl : IDisposable
 {
@@ -20,6 +23,9 @@ public sealed class RgbControl : IDisposable
     private readonly object _gate = new();
     private readonly HashSet<int> _prepared = [];
     private OpenRgbClient? _client;
+
+    /// <summary>O OpenRGB avisou que a lista de dispositivos mudou; quem usa deve conectar de novo.</summary>
+    public event Action? DevicesChanged;
 
     public bool Connected
     {
@@ -40,6 +46,7 @@ public sealed class RgbControl : IDisposable
             try
             {
                 client.Connect();
+                client.DeviceListUpdated += (_, _) => DevicesChanged?.Invoke();
                 List<RgbDevice> devices = client.GetAllControllerData()
                     .Where(d => d.Leds.Length > 0)
                     .Select(d => new RgbDevice(d.Index, d.Name, d.Leds.Length))
@@ -70,6 +77,24 @@ public sealed class RgbControl : IDisposable
             var colors = new Color[device.LedCount];
             Array.Fill(colors, new Color(red, green, blue));
             client.UpdateLeds(device.Index, colors);
+        }
+    }
+
+    /// <summary>Pede ao Windows para iniciar o serviço do OpenRGB, caso exista e esteja parado.</summary>
+    public static void TryStartService()
+    {
+        try
+        {
+            using Process? process = Process.Start(new ProcessStartInfo("sc.exe", "start OpenRGB")
+            {
+                CreateNoWindow = true,
+                UseShellExecute = false,
+            });
+            process?.WaitForExit(3000);
+        }
+        catch (Exception)
+        {
+            // Sem o serviço (OpenRGB antigo ou não instalado) não há o que iniciar.
         }
     }
 

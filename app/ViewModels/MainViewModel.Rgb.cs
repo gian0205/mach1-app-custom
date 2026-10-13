@@ -22,6 +22,9 @@ public partial class MainViewModel
     private HashSet<string> _rgbSkipped = [];
     private (byte R, byte G, byte B)? _rgbSent;
     private bool _rgbBusy;
+    private bool _rgbServiceTried;
+    // Ligado pelo OpenRGB, de outra thread, quando a lista de dispositivos dele muda.
+    private volatile bool _rgbRelist;
     private int _rgbWait;
 
     /// <summary>Dispositivos que o OpenRGB encontrou.</summary>
@@ -77,6 +80,7 @@ public partial class MainViewModel
         if (value)
         {
             _rgbWait = 0;
+            _rgbServiceTried = false;
             RgbStatus = "Procurando o OpenRGB...";
         }
         else
@@ -99,6 +103,7 @@ public partial class MainViewModel
     {
         DropRgb("Procurando o OpenRGB...");
         _rgbWait = 0;
+        _rgbServiceTried = false;
     }
 
     private void DropRgb(string status)
@@ -130,6 +135,14 @@ public partial class MainViewModel
         _rgbBusy = true;
         try
         {
+            // Lista mudou no OpenRGB (ele ainda estava procurando os dispositivos, por exemplo): refaz.
+            if (_rgbRelist && RgbConnected)
+            {
+                DropRgb("Atualizando a lista de dispositivos...");
+                _rgbWait = 1;
+            }
+            _rgbRelist = false;
+
             if (!RgbConnected)
             {
                 if (_rgbWait-- > 0)
@@ -176,13 +189,25 @@ public partial class MainViewModel
             RgbConnected = true;
             _rgbSent = null;
             RgbStatus = devices.Count == 0
-                ? "Conectado ao OpenRGB, mas ele não encontrou nenhum dispositivo com LEDs."
+                ? "Conectado ao OpenRGB, mas ele ainda não listou nenhum dispositivo com LEDs. O app confere de novo em alguns segundos."
                 : $"Conectado ao OpenRGB: {devices.Count} dispositivo(s).";
+
+            // Logo depois do boot o OpenRGB ainda está procurando os dispositivos: confere de novo.
+            if (devices.Count == 0)
+                _rgbRelist = true;
         }
         catch (Exception)
         {
             RgbConnected = false;
-            RgbStatus = $"O OpenRGB não respondeu na porta {port}. Abra o OpenRGB e ligue o servidor SDK; o app tenta de novo a cada {RgbRetrySeconds} segundos.";
+            RgbStatus = $"O OpenRGB não respondeu na porta {port}. Confira se ele está instalado; nas versões antes da 1.0, abra o programa e ligue o servidor SDK. O app tenta de novo a cada {RgbRetrySeconds} segundos.";
+
+            // O OpenRGB 1.0 é um serviço do Windows: se estiver parado, pede para iniciar, uma vez.
+            if (!_rgbServiceTried)
+            {
+                _rgbServiceTried = true;
+                await Task.Run(RgbControl.TryStartService);
+                _rgbWait = 2;
+            }
         }
     }
 

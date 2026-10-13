@@ -19,7 +19,7 @@ Este guia mostra cada parte do app, com imagens da versão 1.0.1 rodando em um R
 
 1. Baixe o `MACH1-custom-app-setup-<versão>.exe` na página de releases do repositório e execute.
 2. O Windows SmartScreen pode avisar, porque o instalador não é assinado: clique em "Mais informações" e depois em "Executar assim mesmo".
-3. O instalador copia o app com o .NET junto, instala o driver PawnIO se ele ainda não estiver na máquina e coloca um `ffmpeg.exe` ao lado do app. Ele oferece duas opções: atalho na área de trabalho e abrir junto com o Windows.
+3. O instalador copia o app com o .NET junto, instala o driver PawnIO se ele ainda não estiver na máquina e coloca um `ffmpeg.exe` ao lado do app. Ele oferece três opções: atalho na área de trabalho, abrir junto com o Windows e instalar o OpenRGB 1.0, usado pela aba LEDs. A do OpenRGB só aparece se ele ainda não estiver na máquina.
 4. Feche o MACH1-LCD do fabricante antes de abrir o app. Os dois programas não conseguem usar a tela ao mesmo tempo.
 5. Abra o MACH1 custom app. O Windows pede permissão de administrador a cada abertura, porque o app fala direto com o processador e com o chip de ventoinhas da placa-mãe.
 
@@ -219,16 +219,17 @@ A curva reage rápido quando esquenta e devagar quando esfria, para a ventoinha 
 
 Esta aba controla os LEDs RGB do PC por meio do [OpenRGB](https://openrgb.org/). O app não fala direto com os LEDs: ele manda a cor para o OpenRGB, que conhece a placa-mãe, a memória, a placa de vídeo e os controladores. Na imagem acima, o OpenRGB 1.0 encontrou os dois módulos de memória, a placa-mãe e um controle DualSense, que foi deixado de fora.
 
-**Preparar o OpenRGB**
+**O OpenRGB**
 
-1. Instale o OpenRGB e abra como administrador.
-2. Confira se ele lista os seus dispositivos. O que o OpenRGB não enxerga, o app também não controla.
-3. Na aba **SDK Server**, clique em **Start Server**. A porta padrão é 6742.
-4. Para não repetir isso a cada boot, ligue em **Settings** as opções de abrir com o Windows e de iniciar o servidor.
+O instalador do app oferece o OpenRGB 1.0. Essa versão roda como serviço do Windows e já sobe com o servidor SDK ligado, então não é preciso abrir nem configurar nada: basta marcar **Controlar os LEDs** no app. Se o serviço estiver parado, o app pede ao Windows para iniciá-lo.
+
+Para ver o que o OpenRGB encontrou no seu PC, abra o programa dele pelo menu Iniciar. O que ele não enxerga, o app também não controla.
+
+Quem usa uma versão anterior à 1.0 precisa abrir o OpenRGB como administrador e, na aba **SDK Server**, clicar em **Start Server**. A porta padrão é 6742.
 
 **No app**
 
-- **Controlar os LEDs** liga o envio. Sem o OpenRGB aberto, o app tenta de novo a cada 5 segundos.
+- **Controlar os LEDs** liga o envio. Se o OpenRGB não responder, o app tenta de novo a cada 5 segundos.
 - **Cor fixa**: a cor e o brilho escolhidos.
 - **Cor de destaque da tela do water cooler**: os LEDs acompanham o tema da tela.
 - **Conforme a temperatura do processador**: os LEDs ficam na cor escolhida e passam aos poucos para as cores de atenção e crítica da aba da tela quando o processador esquenta.
@@ -273,7 +274,7 @@ Tudo fica em `%AppData%\Mach1CustomApp`:
 | `benchmarks.json` | Histórico de testes |
 | `crash.log` | Registro de erros, se houver |
 
-Desinstalar o app não apaga essa pasta nem o driver PawnIO.
+Desinstalar o app não apaga essa pasta, o driver PawnIO nem o OpenRGB.
 
 ## Solução de problemas
 
@@ -323,7 +324,7 @@ Ela não está ligada a um conector da placa-mãe, ou o chip de monitoramento da
 
 **Os LEDs não mudam de cor**
 
-Confira se o OpenRGB está aberto com o servidor SDK ligado e se ele próprio consegue mudar a cor do dispositivo. Feche outros programas de LED que estejam controlando a mesma peça.
+Confira a mensagem no topo da aba LEDs. Abra o OpenRGB pelo menu Iniciar e veja se ele próprio lista o dispositivo e consegue mudar a cor dele. Feche outros programas de LED que estejam controlando a mesma peça.
 
 **O app fechou sozinho**
 
