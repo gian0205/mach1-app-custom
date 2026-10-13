@@ -25,6 +25,7 @@
     <PackageReference Include="HidSharp" Version="2.6.4" />
     <!-- Sensores de processadores e placas de vídeo que o caminho principal não cobre -->
     <PackageReference Include="LibreHardwareMonitorLib" Version="0.9.6" />
+    <PackageReference Include="OpenRGB.NET" Version="3.1.1" />
   </ItemGroup>
 
   <ItemGroup>

@@ -35,6 +35,10 @@ App .NET 10 + Avalonia que ajusta o processador Ryzen de dentro do Windows, cont
 - Se o app for encerrado à força com um conector sob o controle dele, o conector fica na última velocidade até o PC reiniciar; na abertura seguinte o app avisa e o mantém pela curva. Use o Sair da bandeja ou `--quit`
 - Só alcança o que está ligado na placa-mãe; ventoinhas com controlador próprio (as sem fio da Lian Li, por exemplo) ficam de fora
 
+**LEDs RGB**
+
+- Cor dos LEDs do PC pelo [OpenRGB](https://openrgb.org/), que precisa estar aberto com o servidor SDK ligado: cor fixa, a cor do tema da tela ou conforme a temperatura do processador
+
 **Tela do water cooler** (USB `1600:3005`, 720x1280)
 
 - Página de temperaturas e sensores (CPU, GPU, uso, memória, VRAM, consumo da GPU) e página do Curve Optimizer, fixas ou alternando
@@ -96,7 +100,7 @@ Argumentos:
 - `--edit-layout` abre direto o editor de layout da tela
 - As variáveis de ambiente `MACH1_GENERIC=1` (PC sem Ryzen suportado e sem NVIDIA) e `MACH1_NO_CO=1` (Ryzen sem Curve Optimizer) simulam outras máquinas, para testar esses caminhos
 - `--tray` abre só na bandeja (é como a tarefa agendada chama o app)
-- `--tab N` abre direto na aba N (0 a 4)
+- `--tab N` abre direto na aba N (0 a 5)
 - `--quit` encerra a cópia aberta do jeito normal (devolve as ventoinhas à placa-mãe)
 - `--fans <arquivo>` lista os conectores de ventoinha, sem alterar nada
 - `--fan-test <conector> <porcentagem> <arquivo>` fixa um conector por 8 s, anota a rotação e devolve ao automático
@@ -110,6 +114,7 @@ Argumentos:
   - `Services/Machine.cs` — o que há neste PC e de onde vem cada sensor
   - `Services/CpuTuner.cs` — comandos do SMU (só Ryzen suportado)
   - `Services/FanControl.cs` — ventoinhas e bomba pela LibreHardwareMonitor
+  - `Services/RgbControl.cs` — LEDs pelo servidor SDK do OpenRGB
   - `Services/GenericSensors.cs` — sensores pela LibreHardwareMonitor
   - `Services/LcdDevice.cs` — protocolo da tela (documentado no topo do arquivo)
   - `Services/LcdRenderer.cs` e `LcdService.cs` — desenho do painel e envio

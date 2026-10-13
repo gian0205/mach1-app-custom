@@ -9,6 +9,7 @@ Este guia mostra cada parte do app, com imagens da versão 1.0.1 rodando em um R
 - [Processador](#processador)
 - [Benchmark](#benchmark)
 - [Ventoinhas e bomba](#ventoinhas-e-bomba)
+- [LEDs](#leds)
 - [Geral](#geral)
 - [Bandeja e encerramento](#bandeja-e-encerramento)
 - [Onde ficam os seus dados](#onde-ficam-os-seus-dados)
@@ -24,7 +25,7 @@ Este guia mostra cada parte do app, com imagens da versão 1.0.1 rodando em um R
 
 ## A janela
 
-O topo mostra o nome do processador, a geração, o número de núcleos e a temperatura atual do processador e da placa de vídeo. Abaixo ficam as cinco abas. A linha no rodapé mostra a última ação feita pelo app.
+O topo mostra o nome do processador, a geração, o número de núcleos e a temperatura atual do processador e da placa de vídeo. Abaixo ficam as seis abas. A linha no rodapé mostra a última ação feita pelo app.
 
 O app abre na aba **Tela do water cooler**.
 
@@ -201,6 +202,34 @@ A curva reage rápido quando esquenta e devagar quando esfria, para a ventoinha 
 - O app só alcança o que está ligado na placa-mãe. Ventoinhas com controlador próprio, como as sem fio da Lian Li, ficam de fora, a menos que o controlador esteja configurado para seguir o sinal da placa-mãe.
 - Se o app for encerrado à força com um conector sob o controle dele, o conector fica na última velocidade até o PC reiniciar. Veja [Bandeja e encerramento](#bandeja-e-encerramento).
 
+## LEDs
+
+![Aba de LEDs](imagens/leds.png)
+
+Esta aba controla os LEDs RGB do PC por meio do [OpenRGB](https://openrgb.org/). O app não fala direto com os LEDs: ele manda a cor para o OpenRGB, que conhece a placa-mãe, a memória, a placa de vídeo e os controladores. Na imagem acima os dois dispositivos são de um servidor de teste.
+
+**Preparar o OpenRGB**
+
+1. Instale o OpenRGB e abra como administrador.
+2. Confira se ele lista os seus dispositivos. O que o OpenRGB não enxerga, o app também não controla.
+3. Na aba **SDK Server**, clique em **Start Server**. A porta padrão é 6742.
+4. Para não repetir isso a cada boot, ligue em **Settings** as opções de abrir com o Windows e de iniciar o servidor.
+
+**No app**
+
+- **Controlar os LEDs** liga o envio. Sem o OpenRGB aberto, o app tenta de novo a cada 5 segundos.
+- **Cor fixa**: a cor e o brilho escolhidos.
+- **Cor de destaque da tela do water cooler**: os LEDs acompanham o tema da tela.
+- **Conforme a temperatura do processador**: os LEDs ficam na cor escolhida e passam aos poucos para as cores de atenção e crítica da aba da tela quando o processador esquenta.
+- **Dispositivos**: desmarque o que deve ficar de fora.
+
+**Limites**
+
+- Todos os LEDs de um dispositivo recebem a mesma cor; não há efeitos nem cor por LED.
+- Dois programas mandando cor para o mesmo LED brigam entre si. Feche ou desative no L-Connect, no SignalRGB e nos programas da placa-mãe o que for controlado pelo app.
+- Ao desligar a opção ou fechar o app, os LEDs ficam na última cor enviada.
+- A integração foi testada com um servidor de teste que imita o OpenRGB, não com o OpenRGB de verdade nem com LEDs.
+
 ## Geral
 
 ![Aba geral](imagens/geral.png)
@@ -280,6 +309,10 @@ O app foi encerrado à força. Reinicie o PC para a placa-mãe retomar o conecto
 **Uma ventoinha não aparece**
 
 Ela não está ligada a um conector da placa-mãe, ou o chip de monitoramento da placa não é reconhecido pela LibreHardwareMonitor.
+
+**Os LEDs não mudam de cor**
+
+Confira se o OpenRGB está aberto com o servidor SDK ligado e se ele próprio consegue mudar a cor do dispositivo. Feche outros programas de LED que estejam controlando a mesma peça.
 
 **O app fechou sozinho**
 

@@ -103,6 +103,24 @@ public sealed class Profile
 
     public List<FanSetting> Fans { get; set; } = [];
 
+    // LEDs do PC, pelo OpenRGB
+
+    public bool RgbEnabled { get; set; }
+
+    /// <summary>0 = cor fixa, 1 = cor de destaque da tela, 2 = conforme a temperatura do processador.</summary>
+    public int RgbMode { get; set; }
+
+    public string? RgbColor { get; set; }
+
+    /// <summary>Brilho, de 5 a 100 %.</summary>
+    public int RgbBrightness { get; set; } = 100;
+
+    /// <summary>Porta do servidor SDK do OpenRGB; 0 usa a padrão (6742).</summary>
+    public int RgbPort { get; set; }
+
+    /// <summary>Nomes dos dispositivos que o usuário deixou de fora.</summary>
+    public List<string> RgbSkipped { get; set; } = [];
+
     // Perfis por jogo
 
     public List<GameProfile> Games { get; set; } = [];

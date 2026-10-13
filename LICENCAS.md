@@ -10,6 +10,7 @@ O MACH1 custom app usa ou acompanha os componentes abaixo. Cada um segue a licen
 | [FFmpeg](https://ffmpeg.org/) (build "essentials" de gyan.dev) | Decodificar vídeo de fundo da tela; acompanha o instalador como `ffmpeg.exe` | GPL-3.0 |
 | [Avalonia](https://avaloniaui.net/) | Interface | MIT |
 | [SkiaSharp](https://github.com/mono/SkiaSharp) | Desenho do painel da tela | MIT |
+| [OpenRGB.NET](https://github.com/diogotr7/OpenRGB.NET) | Cliente do servidor SDK do OpenRGB, para os LEDs | MIT |
 | [HidSharp](https://www.zer7.com/software/hidsharp) | Comunicação USB com a tela | Apache-2.0 |
 | [CommunityToolkit.Mvvm](https://github.com/CommunityToolkit/dotnet) | Estrutura dos view models | MIT |
 | .NET | Plataforma; acompanha o instalador | MIT |

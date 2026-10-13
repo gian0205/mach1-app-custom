@@ -631,6 +631,87 @@
                 </Grid>
             </TabItem>
 
+            <!-- ============ LEDs ============ -->
+            <TabItem Header="LEDs">
+                <Grid ColumnDefinitions="*,330" ColumnSpacing="34">
+
+                    <Border Classes="panel">
+                        <ScrollViewer>
+                            <StackPanel Spacing="12" Margin="0,0,14,0">
+                                <TextBlock Text="LEDs do PC, pelo OpenRGB" Classes="heading" />
+                                <TextBlock Classes="muted" Text="{Binding RgbStatus}" TextWrapping="Wrap" />
+                                <StackPanel Orientation="Horizontal" Spacing="14">
+                                    <CheckBox Content="Controlar os LEDs" IsChecked="{Binding RgbEnabled}" />
+                                    <Button Content="Procurar de novo" Command="{Binding ReconnectCommand}" IsEnabled="{Binding RgbEnabled}" />
+                                </StackPanel>
+
+                                <Border Classes="rule" />
+
+                                <TextBlock Text="Cor" Classes="heading" />
+                                <ComboBox SelectedIndex="{Binding RgbMode}" HorizontalAlignment="Stretch">
+                                    <ComboBoxItem Content="Cor fixa" />
+                                    <ComboBoxItem Content="Cor de destaque da tela do water cooler" />
+                                    <ComboBoxItem Content="Conforme a temperatura do processador" />
+                                </ComboBox>
+                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" RowSpacing="8" ColumnSpacing="14">
+                                    <TextBlock Text="Cor dos LEDs" VerticalAlignment="Center" />
+                                    <ColorPicker Grid.Column="1" Color="{Binding RgbColor}" IsAlphaEnabled="False" />
+                                    <TextBlock Grid.Row="1" Text="Brilho" VerticalAlignment="Center" />
+                                    <Slider Grid.Row="1" Grid.Column="1" Width="260" Minimum="5" Maximum="100" Value="{Binding RgbBrightness}" />
+                                </Grid>
+                                <TextBlock Classes="muted" TextWrapping="Wrap"
+                                           Text="Na cor de destaque da tela, os LEDs acompanham o tema da tela do water cooler. Conforme a temperatura, eles ficam na cor escolhida e passam para as cores de atenção e crítica da aba da tela quando o processador esquenta." />
+
+                                <Border Classes="rule" />
+
+                                <TextBlock Text="Dispositivos" Classes="heading" />
+                                <TextBlock Classes="muted" IsVisible="{Binding !RgbConnected}" TextWrapping="Wrap"
+                                           Text="A lista aparece quando o app se conecta ao OpenRGB." />
+                                <ItemsControl ItemsSource="{Binding RgbDevices}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:RgbDeviceViewModel">
+                                            <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,6">
+                                                <CheckBox Content="{Binding Name}" IsChecked="{Binding Enabled}" />
+                                                <TextBlock Grid.Column="1" Classes="muted" Text="{Binding Detail}" VerticalAlignment="Center" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <Border Classes="rule" />
+
+                                <Grid ColumnDefinitions="*,118" ColumnSpacing="14">
+                                    <TextBlock Text="Porta do servidor SDK do OpenRGB" VerticalAlignment="Center" TextWrapping="Wrap" />
+                                    <NumericUpDown Grid.Column="1" Value="{Binding RgbPort}" FormatString="0" Minimum="1" Maximum="65535" />
+                                </Grid>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Border>
+
+                    <ScrollViewer Grid.Column="1">
+                        <StackPanel Spacing="14" Margin="0,6,14,0">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Como funciona" Classes="heading" />
+                                <TextBlock Classes="muted" TextWrapping="Wrap"
+                                           Text="O app não fala direto com os LEDs: ele manda a cor para o OpenRGB, que conhece a placa-mãe, a memória, a placa de vídeo e os controladores. O OpenRGB precisa estar instalado e aberto." />
+                            </StackPanel>
+                            <Border Classes="rule" />
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Preparar o OpenRGB" Classes="heading" />
+                                <TextBlock Classes="muted" TextWrapping="Wrap"
+                                           Text="1. Instale o OpenRGB (openrgb.org) e abra como administrador.&#10;2. Confira se ele lista os seus dispositivos.&#10;3. Na aba SDK Server, clique em Start Server. A porta padrão é 6742.&#10;4. Para não repetir isso, ligue em Settings as opções de abrir com o Windows e de iniciar o servidor." />
+                            </StackPanel>
+                            <Border Classes="rule" />
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Outros programas de LED" Classes="heading" />
+                                <TextBlock Classes="muted" TextWrapping="Wrap"
+                                           Text="Dois programas mandando cor para o mesmo LED brigam entre si. Feche ou desative no L-Connect, no SignalRGB e nos programas da placa-mãe o que for controlado por aqui, ou desmarque o dispositivo na lista ao lado." />
+                            </StackPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+
             <!-- ============ Geral ============ -->
             <TabItem Header="Geral">
                 <ScrollViewer>

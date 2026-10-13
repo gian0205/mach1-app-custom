@@ -34,6 +34,7 @@ public partial class MainViewModel : ViewModelBase, IDisposable
         nameof(TempColorsEnabled), nameof(CpuWarmAt), nameof(CpuHotAt), nameof(GpuWarmAt), nameof(GpuHotAt),
         nameof(TempWarnColor), nameof(TempHotColor),
         nameof(LcdWidthSetting), nameof(LcdHeightSetting), nameof(LcdSidewaysSetting),
+        nameof(RgbEnabled), nameof(RgbMode), nameof(RgbColor), nameof(RgbBrightness), nameof(RgbPort),
     ];
 
     private readonly bool _startedAtLogon;
@@ -285,6 +286,7 @@ public partial class MainViewModel : ViewModelBase, IDisposable
         CloseToTray = _stored.CloseToTray;
         LoadLcdSettings(_stored);
         LoadLayout(_stored);
+        LoadRgbSettings(_stored);
 
         Games.Clear();
         foreach (GameProfile game in _stored.Games)
@@ -311,6 +313,7 @@ public partial class MainViewModel : ViewModelBase, IDisposable
         _stored.CloseToTray = CloseToTray;
         StoreLcdSettings(_stored);
         _stored.Layout = BuildLayout();
+        StoreRgbSettings(_stored);
         _stored.Games = [.. Games];
         if (_fans is not null)
             _stored.Fans = Fans.Select(f => f.ToSetting()).ToList();
@@ -461,6 +464,7 @@ public partial class MainViewModel : ViewModelBase, IDisposable
 
             UpdateLcd(machine, sensors, clocks);
             await UpdateFansAsync(machine, sensors);
+            await UpdateRgbAsync(sensors);
 
             if (++_tick % 3 == 0)
                 await CheckGamesAsync();
@@ -491,6 +495,7 @@ public partial class MainViewModel : ViewModelBase, IDisposable
         StartupGuard.Confirm();
         _lcd.Dispose();
         ReleaseFans();
+        _rgb.Dispose();
         _machine?.Dispose();
     }
 }
