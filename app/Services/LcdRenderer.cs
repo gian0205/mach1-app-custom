@@ -75,6 +75,7 @@ public sealed record LcdThemePreset(string Name, LcdTheme Theme)
         new("Neon verde", new(0xFF050B07, 0xFFE9FFEA, 0xFF39FF14, Neon: true)),
         new("Neon roxo", new(0xFF0A0716, 0xFFF1E8FF, 0xFFC04DFF, Neon: true)),
         new("Neon azul", new(0xFF050A14, 0xFFE6F0FF, 0xFF2E9BFF, Neon: true)),
+        new("Neon carbono", new(0xFF0A0A0B, 0xFFF2F2F2, 0xFFD5DAE2, Neon: true)),
         new("Synthwave", new(0xFF140A26, 0xFFFBE9FF, 0xFF2DE2E6, Neon: true)),
     ];
 }
