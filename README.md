@@ -50,6 +50,12 @@ winget install namazso.PawnIO
 - Placa NVIDIA para os sensores de GPU (usa a NVML do driver)
 - O MACH1-LCD precisa estar fechado para o app usar a tela
 
+## Instalar
+
+Baixe o `MACH1-custom-app-setup-<versão>.exe` na página de releases do repositório e execute. O instalador já leva o .NET, instala o driver PawnIO se ele ainda não estiver na máquina e coloca um `ffmpeg.exe` ao lado do app para o vídeo de fundo. Na desinstalação, o PawnIO e as suas configurações em `%AppData%Mach1CustomApp` ficam.
+
+Para gerar o instalador a partir do código, veja `gerar-instalador.cmd` e `installer/setup.iss`. As licenças dos componentes de terceiros estão em `LICENCAS.md`.
+
 ## Em que máquinas funciona
 
 - **Tela do water cooler, sensores e benchmark**: qualquer PC com Windows 10/11 de 64 bits.
