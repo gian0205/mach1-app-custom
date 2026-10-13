@@ -19,6 +19,9 @@ public partial class MainViewModel
 {
     private const int LcdTab = 1;
 
+    // Leituras dos últimos minutos, para as páginas da tela com gráfico.
+    private readonly LcdHistoryBuffer _lcdHistory = new();
+
     private const int LcdRetrySeconds = 5;
 
     private byte[]? _previewSource;
@@ -188,7 +191,7 @@ public partial class MainViewModel
         if (Color.TryParse(profile.LcdText, out Color text)) LcdText = text;
         if (Color.TryParse(profile.LcdAccent, out Color accent)) LcdAccent = accent;
         LcdNeon = profile.LcdNeon;
-        LcdPageMode = Math.Clamp(profile.LcdPageMode, 0, CustomPageMode);
+        LcdPageMode = Math.Clamp(profile.LcdPageMode, 0, LastPageMode);
         LcdPageSeconds = profile.LcdPageSeconds;
         LcdImagePath = profile.LcdImagePath;
         LcdImageDim = profile.LcdImageDim;
@@ -463,7 +466,7 @@ public partial class MainViewModel
             : "";
 
         _lcd.Content = new LcdContent(CpuName, sensors, Cores.Select(c => c.CurrentMargin).ToArray(), clocks, DateTime.Now,
-            machine.CpuTemperatureLimit, MinMargin);
+            machine.CpuTemperatureLimit, MinMargin, _lcdHistory.Add(sensors));
 
         if (SelectedTab == LcdTab)
             RefreshLcdPreview();

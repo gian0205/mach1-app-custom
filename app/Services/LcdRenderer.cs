@@ -17,13 +17,29 @@ public enum LcdPage
 
     /// <summary>Layout personalizado, montado no editor.</summary>
     Custom,
+
+    /// <summary>Gráfico de temperatura e de uso nos últimos minutos.</summary>
+    Chart,
+
+    /// <summary>Medidores em arco.</summary>
+    Gauges,
+
+    /// <summary>Relógio grande com as temperaturas embaixo.</summary>
+    Clock,
+
+    /// <summary>Só a temperatura do processador, enorme.</summary>
+    Minimal,
+
+    /// <summary>Seis blocos, cada um com valor e minigráfico.</summary>
+    Tiles,
 }
 
 /// <summary>Os dados que o painel mostra em um quadro.</summary>
 /// <param name="CpuLimit">Temperatura em que o processador começa a se limitar, em °C.</param>
 /// <param name="MarginMin">Menor margem do Curve Optimizer neste processador.</param>
+/// <param name="History">Leituras dos últimos minutos, para as páginas com gráfico.</param>
 public sealed record LcdContent(string CpuName, SensorSnapshot Sensors, int?[] Margins, double[] ClocksMhz, DateTime Time,
-    float CpuLimit = 95, int MarginMin = CpuTuner.DefaultMinMargin)
+    float CpuLimit = 95, int MarginMin = CpuTuner.DefaultMinMargin, LcdHistory? History = null)
 ;
 
 /// <summary>Quando e para que cor a temperatura muda conforme sobe.</summary>
@@ -90,7 +106,7 @@ public readonly record struct LcdStyle(LcdTheme Theme, bool Flipped, LcdPage Pag
 /// <summary>
 /// Desenha o painel de 720x1280 e devolve o JPEG.
 /// </summary>
-public sealed class LcdRenderer : IDisposable
+public sealed partial class LcdRenderer : IDisposable
 {
     // As páginas prontas são desenhadas em colunas de 720 unidades de largura, que depois são
     // escaladas e arrumadas conforme o formato da tela (ver DrawPages).
@@ -145,6 +161,7 @@ public sealed class LcdRenderer : IDisposable
         if (style.AlertFlash)
             background = Blend(background, Critical, 0.4f);
 
+        _background = background;
         _text = new SKColor(style.Theme.Text);
         _accent = new SKColor(style.Theme.Accent);
         _neon = style.Theme.Neon;
@@ -210,13 +227,13 @@ public sealed class LcdRenderer : IDisposable
         canvas.DrawRect(0, 0, LcdScreen.Width, LcdScreen.Height, _paint);
     }
 
-    private void DrawHeader(SKCanvas canvas, LcdContent content)
+    private void DrawHeader(SKCanvas canvas, LcdContent content, float right = Right)
     {
         // "AMD Ryzen 7 9800X3D 8-Core Processor" → "Ryzen 7 9800X3D";
         // "Intel(R) Core(TM) i7-13700K CPU @ 3.40GHz" → "Intel Core i7-13700K"
         string name = Regex.Replace(content.CpuName, @"\((R|TM)\)|^AMD\s+|\s+\d+-Core Processor$|\s+CPU\s+@.*$|\s+with Radeon.*$|\s+w/ Radeon.*$", "");
         DrawText(canvas, name, Left, 104, 44, _text, _regular);
-        DrawText(canvas, content.Time.ToString("HH:mm"), Right, 104, 44, _muted, _regular, SKTextAlign.Right);
+        DrawText(canvas, content.Time.ToString("HH:mm"), right, 104, 44, _muted, _regular, SKTextAlign.Right);
     }
 
     /// <summary>
@@ -226,6 +243,12 @@ public sealed class LcdRenderer : IDisposable
     /// </summary>
     private void DrawPages(SKCanvas canvas, LcdContent content, LcdPage page)
     {
+        if (page >= LcdPage.Chart)
+        {
+            DrawStylePage(canvas, content, page);
+            return;
+        }
+
         float width = LcdScreen.Width, height = LcdScreen.Height, ratio = width / height;
         SensorSnapshot sensors = content.Sensors;
 
@@ -539,6 +562,7 @@ public sealed class LcdRenderer : IDisposable
     public void Dispose()
     {
         _paint.Dispose();
+        _stroke.Dispose();
         _regular.Dispose();
         _light.Dispose();
         _bitmap.Dispose();

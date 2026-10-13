@@ -255,6 +255,11 @@
                                     <ComboBoxItem Content="Curve Optimizer" />
                                     <ComboBoxItem Content="Alternar entre as duas" />
                                     <ComboBoxItem Content="Layout personalizado" />
+                                    <ComboBoxItem Content="Gráfico de temperatura e uso" />
+                                    <ComboBoxItem Content="Medidores" />
+                                    <ComboBoxItem Content="Relógio" />
+                                    <ComboBoxItem Content="Minimalista" />
+                                    <ComboBoxItem Content="Blocos com minigráficos" />
                                 </ComboBox>
                                 <Button Content="Editar o layout personalizado…" Click="OnEditLayout" />
                                 <TextBlock Classes="muted"

@@ -61,16 +61,25 @@ Quem montou o bloco de lado marca **Tela deitada (bloco montado de lado)**. A re
 
 **Conteúdo**
 
-Há três páginas prontas e uma livre:
+Há páginas prontas, estilos de painel e uma página livre:
 
 - **Temperaturas e sensores**: temperatura do processador e da placa de vídeo, uso, memória, memória de vídeo e consumo da placa de vídeo.
 - **Curve Optimizer**: a margem e o clock de cada núcleo.
 - **Alternar entre as duas**: troca de página a cada tantos segundos.
 - **Layout personalizado**: o que você montar no [editor de layout](#editor-de-layout).
+- **Gráfico de temperatura e uso**: as linhas dos últimos três minutos, do processador e da placa de vídeo.
+- **Medidores**: arcos para as duas temperaturas e, menores, uso do processador, uso da placa de vídeo e memória.
+- **Relógio**: a hora grande, a data e as duas temperaturas embaixo.
+- **Minimalista**: só a temperatura do processador, enorme, com a linha dos últimos minutos.
+- **Blocos com minigráficos**: seis blocos, cada um com o valor e a linha dos últimos minutos.
 
 ![Página de temperaturas, página do Curve Optimizer e o alerta de temperatura](imagens/paginas-da-tela.png)
 
 A imagem acima mostra a página de temperaturas, a página do Curve Optimizer e a tela durante um alerta de temperatura.
+
+![Os cinco estilos de painel, no tema padrão e em um tema neon](imagens/estilos.png)
+
+Os cinco estilos, em cima no tema Ardósia e embaixo no Neon ciano, com leituras de exemplo: gráfico, medidores, relógio, minimalista e blocos. Eles usam as cores do tema escolhido, o efeito neon, as cores da temperatura e o fundo com imagem ou vídeo, e se rearranjam em tela deitada ou quadrada. Os gráficos começam vazios e só ocupam a largura toda depois de três minutos com o app aberto.
 
 **Aparência**
 

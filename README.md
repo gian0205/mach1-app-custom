@@ -14,6 +14,8 @@ App .NET 10 + Avalonia que ajusta o processador Ryzen de dentro do Windows, cont
 
 ![Os sete temas neon](docs/imagens/temas-neon.png)
 
+![Os cinco estilos de painel](docs/imagens/estilos.png)
+
 ## O que faz
 
 **Processador** (direto no SMU; nada é gravado na BIOS, tudo vale até o reboot)
@@ -42,6 +44,7 @@ App .NET 10 + Avalonia que ajusta o processador Ryzen de dentro do Windows, cont
 **Tela do water cooler** (USB `1600:3005`, 720x1280)
 
 - Página de temperaturas e sensores (CPU, GPU, uso, memória, VRAM, consumo da GPU) e página do Curve Optimizer, fixas ou alternando
+- Cinco estilos de painel: gráfico de temperatura e uso dos últimos minutos, medidores, relógio, minimalista e blocos com minigráficos
 - Dezessete temas prontos, sete deles neon, com as barras desenhadas como tubos acesos
 - Cores à escolha, imagem, GIF ou vídeo de fundo, brilho, giro de 180° e opção de tela deitada, para o bloco montado de lado
 - Vídeo usa o `ffmpeg.exe` que vem com o MACH1-LCD (ou um na pasta do app ou no PATH)

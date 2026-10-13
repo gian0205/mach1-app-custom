@@ -154,6 +154,27 @@ sealed class Program
         Write("curva.jpg", LcdPage.Curve, false);
         Write("alerta.jpg", LcdPage.Temperatures, true);
 
+        // As páginas de estilo, com três minutos de leituras inventadas: um jogo abrindo no meio.
+        var buffer = new LcdHistoryBuffer();
+        LcdHistory history = LcdHistory.Empty;
+        for (int i = 0; i < LcdHistory.Capacity; i++)
+        {
+            float load = i < 70 ? 8 + 6 * MathF.Sin(i / 5f) : 62 + 18 * MathF.Sin(i / 9f) + 6 * MathF.Sin(i / 2.3f);
+            float cpu = i < 70 ? 41 + MathF.Sin(i / 7f) : 41 + 27 * (1 - MathF.Exp(-(i - 70) / 25f)) + 2 * MathF.Sin(i / 4f);
+            float gpu = i < 80 ? 38 + 0.5f * MathF.Sin(i / 9f) : 38 + 24 * (1 - MathF.Exp(-(i - 80) / 40f)) + MathF.Sin(i / 6f);
+            float gpuLoad = i < 80 ? 4 + 3 * MathF.Sin(i / 4f) : 88 + 9 * MathF.Sin(i / 5f);
+            history = buffer.Add(new SensorSnapshot(cpu, load, 11.6f + i / 60f, 31.1f, new GpuReading(gpu, gpuLoad, 3.2f, 16f, 30 + gpuLoad * 2.4f)));
+        }
+        SensorSnapshot last = new(68.2f, 71f, 14.6f, 31.1f, new GpuReading(61f, 92f, 9.8f, 16f, 251f));
+        var busy = content with { Sensors = last, History = history };
+        foreach ((string name, LcdPage page) in new[] { ("grafico", LcdPage.Chart), ("medidores", LcdPage.Gauges), ("relogio", LcdPage.Clock), ("minimalista", LcdPage.Minimal), ("blocos", LcdPage.Tiles) })
+        {
+            File.WriteAllBytes(Path.Combine(directory, $"estilo-{name}.jpg"),
+                renderer.Render(busy, new LcdStyle(LcdTheme.Default, false, page, false, 55), background?.GetFrame(0, out _)));
+            File.WriteAllBytes(Path.Combine(directory, $"estilo-{name}-neon.jpg"),
+                renderer.Render(busy, new LcdStyle(LcdThemePreset.All[10].Theme, false, page, false, 55), null));
+        }
+
         // Faixas e cores de temperatura personalizadas: 41,1 °C já na cor de atenção (verde), 38 °C normal.
         var custom = new LcdTempColors(true, 40, 60, 50, 70, 0xFF6FD3A0, 0xFFB79CF5);
         File.WriteAllBytes(Path.Combine(directory, "cores-personalizadas.jpg"),

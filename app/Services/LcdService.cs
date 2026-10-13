@@ -9,7 +9,7 @@ using System.Threading;
 namespace Mach1CustomApp.Services;
 
 /// <summary>Opções do painel que o laço de desenho consulta a cada quadro.</summary>
-/// <param name="PageMode">0 = temperaturas, 1 = Curve Optimizer, 2 = alterna as duas, 3 = layout personalizado.</param>
+/// <param name="PageMode">0 = temperaturas, 1 = Curve Optimizer, 2 = alterna as duas, 3 = layout personalizado, 4 = gráfico, 5 = medidores, 6 = relógio, 7 = minimalista, 8 = blocos.</param>
 /// <param name="Alert">Alguma temperatura passou do limite de alerta.</param>
 /// <param name="Temps">Cores da temperatura; null usa os valores automáticos.</param>
 public sealed record LcdSettings(LcdTheme Theme, bool Flipped, int PageMode, int PageSeconds, int ImageDim, bool Alert, LcdTempColors? Temps = null)
@@ -220,6 +220,11 @@ public sealed class LcdService : IDisposable
                             0 => LcdPage.Temperatures,
                             1 => LcdPage.Curve,
                             3 => LcdPage.Custom,
+                            4 => LcdPage.Chart,
+                            5 => LcdPage.Gauges,
+                            6 => LcdPage.Clock,
+                            7 => LcdPage.Minimal,
+                            8 => LcdPage.Tiles,
                             _ => (long)(_clock.Elapsed.TotalSeconds / Math.Max(2, settings.PageSeconds)) % 2 == 0
                                 ? LcdPage.Temperatures
                                 : LcdPage.Curve,
