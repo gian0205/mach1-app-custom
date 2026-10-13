@@ -90,16 +90,27 @@ public partial class MainViewModel
     /// <summary>Resolução gravada no perfil; passa a valer na próxima abertura do app.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(LcdResolutionNote))]
-    private decimal? _lcdWidthSetting = LcdScreen.Width;
+    private decimal? _lcdWidthSetting = LcdScreen.PanelWidth;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(LcdResolutionNote))]
-    private decimal? _lcdHeightSetting = LcdScreen.Height;
+    private decimal? _lcdHeightSetting = LcdScreen.PanelHeight;
 
-    public string LcdResolutionNote =>
-        (int)(LcdWidthSetting ?? 0) == LcdScreen.Width && (int)(LcdHeightSetting ?? 0) == LcdScreen.Height
-            ? $"Em uso: {LcdScreen.Width} x {LcdScreen.Height}."
-            : $"Em uso: {LcdScreen.Width} x {LcdScreen.Height}. Feche e abra o app para a nova resolução valer.";
+    /// <summary>Tela deitada, como gravado no perfil; passa a valer na próxima abertura do app.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(LcdResolutionNote))]
+    private bool _lcdSidewaysSetting = LcdScreen.Sideways;
+
+    public string LcdResolutionNote
+    {
+        get
+        {
+            string inUse = $"Em uso: {LcdScreen.PanelWidth} x {LcdScreen.PanelHeight}, {(LcdScreen.Sideways ? "deitada" : "em pé")}.";
+            bool same = (int)(LcdWidthSetting ?? 0) == LcdScreen.PanelWidth && (int)(LcdHeightSetting ?? 0) == LcdScreen.PanelHeight &&
+                        LcdSidewaysSetting == LcdScreen.Sideways;
+            return same ? inUse : inUse + " Feche e abra o app para a mudança valer.";
+        }
+    }
 
     // Tamanho da prévia na aba da tela e da área do editor, na proporção da tela.
     public double PreviewWidth => FitScreen(288, 512).Width;
@@ -212,6 +223,7 @@ public partial class MainViewModel
         profile.AlertGpu = (int)(AlertGpu ?? 83);
         profile.LcdWidth = (int)(LcdWidthSetting ?? 0);
         profile.LcdHeight = (int)(LcdHeightSetting ?? 0);
+        profile.LcdSideways = LcdSidewaysSetting;
         profile.TempColorsEnabled = TempColorsEnabled;
         profile.CpuWarmAt = (int)(CpuWarmAt ?? 0);
         profile.CpuHotAt = (int)(CpuHotAt ?? 0);

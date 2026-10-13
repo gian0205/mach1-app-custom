@@ -68,6 +68,9 @@ public sealed class Profile
 
     public int LcdHeight { get; set; }
 
+    /// <summary>Tela montada deitada: o painel é desenhado em paisagem e girado 90° no envio.</summary>
+    public bool LcdSideways { get; set; }
+
     // Alerta de temperatura
 
     public bool AlertEnabled { get; set; }

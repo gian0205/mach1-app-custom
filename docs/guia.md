@@ -48,6 +48,16 @@ O app procura a tela pelo fabricante no USB e mostra o que encontrou. A IRV360 u
 
 Só a IRV360 foi testada em hardware. As outras resoluções foram verificadas pela prévia.
 
+**Tela deitada**
+
+Quem montou o bloco de lado marca **Tela deitada (bloco montado de lado)**. A resolução continua sendo a do painel (720 x 1280 na IRV360); o app desenha as páginas em paisagem e gira 90° no envio. A mudança vale na próxima abertura do app.
+
+![A opção de tela deitada, com a prévia em paisagem](imagens/tela-deitada.png)
+
+- Se a imagem sair de cabeça para baixo, marque ou desmarque **Girar a imagem 180°**.
+- Um layout personalizado feito com a tela em pé não acompanha a mudança. Abra o editor e reposicione os elementos, ou use **Recomeçar do modelo**.
+- Esta opção foi conferida pela prévia e pelo quadro enviado, em uma IRV360 montada em pé. Ainda não foi vista em um bloco montado de lado.
+
 **Conteúdo**
 
 Há três páginas prontas e uma livre:
@@ -232,6 +242,10 @@ Confira o **Brilho** e se **Mostrar o painel na tela** está marcado. Em uma tel
 **A imagem está de cabeça para baixo**
 
 Marque ou desmarque **Girar a imagem 180°**.
+
+**A imagem está de lado**
+
+Marque ou desmarque **Tela deitada** em **Modelo da tela** e abra o app de novo.
 
 **O vídeo de fundo está lento**
 

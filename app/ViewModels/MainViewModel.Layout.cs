@@ -171,8 +171,14 @@ public partial class MainViewModel
 
         _loadingLayout = true;
         LayoutElements.Clear();
+        // O modelo é em pé; em tela deitada ou quadrada ele fica menor e vai para o meio.
+        double offset = Math.Round((LcdScreen.Width - LcdScreen.DefaultWidth * ScreenScale) / 2);
         foreach (LcdElement element in template)
-            LayoutElements.Add(new LayoutElementViewModel(Scaled(element), OnLayoutChanged));
+        {
+            LcdElement scaled = Scaled(element);
+            scaled.X += offset;
+            LayoutElements.Add(new LayoutElementViewModel(scaled, OnLayoutChanged));
+        }
         _loadingLayout = false;
 
         SelectedElement = null;

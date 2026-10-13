@@ -36,7 +36,7 @@ App .NET 10 + Avalonia que ajusta o processador Ryzen de dentro do Windows, cont
 **Tela do water cooler** (USB `1600:3005`, 720x1280)
 
 - Página de temperaturas e sensores (CPU, GPU, uso, memória, VRAM, consumo da GPU) e página do Curve Optimizer, fixas ou alternando
-- Cores à escolha, imagem, GIF ou vídeo de fundo, brilho e giro de 180°
+- Cores à escolha, imagem, GIF ou vídeo de fundo, brilho, giro de 180° e opção de tela deitada, para o bloco montado de lado
 - Vídeo usa o `ffmpeg.exe` que vem com o MACH1-LCD (ou um na pasta do app ou no PATH)
 - Alerta: a tela pisca em vermelho acima de um limite de temperatura
 - Layout personalizado: um editor para posicionar textos, sensores, barras, imagens e GIFs com o mouse
@@ -98,7 +98,7 @@ Argumentos:
 - `--fans <arquivo>` lista os conectores de ventoinha, sem alterar nada
 - `--fan-test <conector> <porcentagem> <arquivo>` fixa um conector por 8 s, anota a rotação e devolve ao automático
 - `--bench <segundos> <arquivo.json>` roda o benchmark sem janela e grava o resultado
-- `--lcd-size <largura> <altura>` faz a prévia abaixo em outra resolução
+- `--lcd-size <largura> <altura>` faz a prévia abaixo em outra resolução; com `--lcd-sideways`, como tela deitada
 - `--lcd-preview <pasta> [imagem]` grava as páginas do painel em arquivos, com valores de exemplo, sem tocar em hardware
 
 ## Estrutura

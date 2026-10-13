@@ -15,6 +15,8 @@ public sealed record LcdScreenInfo(int VendorId, int ProductId, string Name, boo
 /// <summary>
 /// Tamanho da tela em uso e a procura por telas no USB. O tamanho é definido uma vez, ao abrir
 /// o app, porque o desenho, o vídeo de fundo e o editor de layout são montados em cima dele.
+/// <see cref="Width"/> e <see cref="Height"/> são os do desenho, como a pessoa vê a tela; com a tela
+/// deitada eles ficam trocados em relação aos do painel, que é o que vai pelo USB.
 /// </summary>
 public static class LcdScreen
 {
@@ -31,12 +33,23 @@ public static class LcdScreen
 
     public static int Height { get; private set; } = DefaultHeight;
 
+    /// <summary>Resolução do painel, na orientação em que ele recebe os quadros.</summary>
+    public static int PanelWidth { get; private set; } = DefaultWidth;
+
+    public static int PanelHeight { get; private set; } = DefaultHeight;
+
+    /// <summary>A tela está montada deitada: o desenho é girado 90° antes de ir para o painel.</summary>
+    public static bool Sideways { get; private set; }
+
     /// <summary>Define a resolução; valores fora da faixa (ou zero, de perfil antigo) viram o padrão.</summary>
-    public static void Configure(int width, int height)
+    public static void Configure(int width, int height, bool sideways = false)
     {
         bool valid = width is >= MinSide and <= MaxSide && height is >= MinSide and <= MaxSide;
-        Width = valid ? width : DefaultWidth;
-        Height = valid ? height : DefaultHeight;
+        PanelWidth = valid ? width : DefaultWidth;
+        PanelHeight = valid ? height : DefaultHeight;
+        Sideways = sideways;
+        Width = sideways ? PanelHeight : PanelWidth;
+        Height = sideways ? PanelWidth : PanelHeight;
     }
 
     /// <summary>

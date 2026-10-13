@@ -23,7 +23,7 @@ sealed class Program
         // --lcd-size <largura> <altura> faz a prévia abaixo em outra resolução de tela.
         int size = Array.IndexOf(args, "--lcd-size");
         if (size >= 0 && size + 2 < args.Length && int.TryParse(args[size + 1], out int w) && int.TryParse(args[size + 2], out int h))
-            LcdScreen.Configure(w, h);
+            LcdScreen.Configure(w, h, args.Contains("--lcd-sideways"));
 
         // Grava em arquivos as duas páginas do painel com valores de exemplo, sem tocar em
         // hardware: --lcd-preview <pasta> [imagem de fundo]

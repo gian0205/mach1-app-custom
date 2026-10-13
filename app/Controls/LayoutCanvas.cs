@@ -42,6 +42,8 @@ public class LayoutCanvas : Control
     {
         AffectsRender<LayoutCanvas>(SourceProperty, ElementsProperty, SelectedProperty, FlippedProperty);
         FocusableProperty.OverrideDefaultValue<LayoutCanvas>(true);
+        // Elemento que passa da borda da tela não é desenhado por cima do resto da janela.
+        ClipToBoundsProperty.OverrideDefaultValue<LayoutCanvas>(true);
     }
 
     /// <summary>Último quadro desenhado pelo painel.</summary>
@@ -71,15 +73,19 @@ public class LayoutCanvas : Control
 
         if (Source is { } source)
         {
+            // O quadro chega como vai para o painel; a prévia desfaz os giros para mostrá-lo de pé.
+            Matrix upright = Matrix.Identity;
+            Rect target = area;
+            if (LcdScreen.Sideways)
+            {
+                target = new Rect(0, 0, area.Height, area.Width);
+                upright = Matrix.CreateRotation(-Math.PI / 2) * Matrix.CreateTranslation(0, area.Height);
+            }
             if (Flipped)
-            {
-                using (context.PushTransform(Matrix.CreateRotation(Math.PI) * Matrix.CreateTranslation(area.Width, area.Height)))
-                    context.DrawImage(source, area);
-            }
-            else
-            {
-                context.DrawImage(source, area);
-            }
+                upright = upright * Matrix.CreateRotation(Math.PI) * Matrix.CreateTranslation(area.Width, area.Height);
+
+            using (context.PushTransform(upright))
+                context.DrawImage(source, target);
         }
 
         var outline = new Pen(new SolidColorBrush(Colors.White, 0.28), 1);

@@ -33,7 +33,7 @@ public partial class MainViewModel : ViewModelBase, IDisposable
         nameof(AlertEnabled), nameof(AlertCpu), nameof(AlertGpu),
         nameof(TempColorsEnabled), nameof(CpuWarmAt), nameof(CpuHotAt), nameof(GpuWarmAt), nameof(GpuHotAt),
         nameof(TempWarnColor), nameof(TempHotColor),
-        nameof(LcdWidthSetting), nameof(LcdHeightSetting),
+        nameof(LcdWidthSetting), nameof(LcdHeightSetting), nameof(LcdSidewaysSetting),
     ];
 
     private readonly bool _startedAtLogon;
@@ -61,12 +61,17 @@ public partial class MainViewModel : ViewModelBase, IDisposable
         try
         {
             Profile? saved = ProfileStore.Load();
-            LcdScreen.Configure(saved?.LcdWidth ?? 0, saved?.LcdHeight ?? 0);
+            LcdScreen.Configure(saved?.LcdWidth ?? 0, saved?.LcdHeight ?? 0, saved?.LcdSideways ?? false);
         }
         catch (Exception)
         {
             // Perfil ilegível: fica a resolução padrão; o aviso sai quando o perfil for carregado.
         }
+
+        // Os campos da janela nascem antes desta leitura, com o padrão; aqui passam a mostrar o que está em uso.
+        LcdWidthSetting = LcdScreen.PanelWidth;
+        LcdHeightSetting = LcdScreen.PanelHeight;
+        LcdSidewaysSetting = LcdScreen.Sideways;
 
         _lcd = new LcdService();
         _lcd.DeviceFailed += OnLcdDeviceFailed;

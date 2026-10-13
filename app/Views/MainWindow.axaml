@@ -237,6 +237,9 @@
                                     <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding LcdWidthSetting}" FormatString="0" Minimum="120" Maximum="2560" Increment="10" />
                                     <NumericUpDown Grid.Row="1" Grid.Column="2" Value="{Binding LcdHeightSetting}" FormatString="0" Minimum="120" Maximum="2560" Increment="10" />
                                 </Grid>
+                                <CheckBox Content="Tela deitada (bloco montado de lado)" IsChecked="{Binding LcdSidewaysSetting}" />
+                                <TextBlock Classes="muted" TextWrapping="Wrap"
+                                           Text="O painel passa a ser desenhado em paisagem e girado 90° no envio. Se a imagem sair de cabeça para baixo, marque ou desmarque Girar a imagem 180°. O layout personalizado feito em pé não acompanha: refaça-o no editor." />
                                 <TextBlock Classes="muted" Text="{Binding LcdResolutionNote}" />
                                 <Button Content="Voltar para 720 x 1280" Command="{Binding ResetLcdResolutionCommand}" />
                                 <TextBlock Classes="muted"

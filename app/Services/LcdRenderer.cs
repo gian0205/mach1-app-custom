@@ -104,6 +104,10 @@ public sealed class LcdRenderer : IDisposable
     private SKColor _warn, _hot;
 
     private readonly SKBitmap _bitmap = new(LcdScreen.Width, LcdScreen.Height, SKColorType.Rgba8888, SKAlphaType.Opaque);
+    // Com a tela deitada, o desenho girado 90° na orientação do painel.
+    private readonly SKBitmap? _panel = LcdScreen.Sideways
+        ? new SKBitmap(LcdScreen.PanelWidth, LcdScreen.PanelHeight, SKColorType.Rgba8888, SKAlphaType.Opaque)
+        : null;
     private readonly SKTypeface _regular = SKTypeface.FromFamilyName("Bahnschrift", SKFontStyle.Normal);
     private readonly SKTypeface _light = SKTypeface.FromFamilyName("Bahnschrift",
         SKFontStyleWeight.Light, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright);
@@ -166,7 +170,16 @@ public sealed class LcdRenderer : IDisposable
         }
 
         canvas.Flush();
-        using SKImage image = SKImage.FromBitmap(_bitmap);
+        if (_panel is not null)
+        {
+            using var turned = new SKCanvas(_panel);
+            turned.Translate(LcdScreen.PanelWidth, 0);
+            turned.RotateDegrees(90);
+            turned.DrawBitmap(_bitmap, 0, 0);
+            turned.Flush();
+        }
+
+        using SKImage image = SKImage.FromBitmap(_panel ?? _bitmap);
         using SKData data = image.Encode(SKEncodedImageFormat.Jpeg, quality);
         return data.ToArray();
     }
@@ -471,5 +484,6 @@ public sealed class LcdRenderer : IDisposable
         _regular.Dispose();
         _light.Dispose();
         _bitmap.Dispose();
+        _panel?.Dispose();
     }
 }
