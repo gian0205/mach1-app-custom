@@ -4,7 +4,7 @@
 ; Compilar: ISCC.exe setup.iss  ->  out\MACH1-custom-app-setup-<versão>.exe
 
 #define AppName "MACH1 custom app"
-#define AppVersion "1.0.1"
+#define AppVersion "1.0.2"
 #define AppExe "Mach1CustomApp.exe"
 #define TaskName "Mach1CustomApp"
 
