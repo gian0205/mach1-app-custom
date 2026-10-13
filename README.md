@@ -1,6 +1,16 @@
 # MACH1 custom app
 
-App .NET 10 + Avalonia que ajusta o processador Ryzen de dentro do Windows e controla a tela LCD do water cooler MACH1.
+App .NET 10 + Avalonia que ajusta o processador Ryzen de dentro do Windows, controla a tela LCD do water cooler MACH1 e as ventoinhas da placa-mãe.
+
+![A aba da tela do water cooler](docs/imagens/tela.png)
+
+**[Guia de uso com imagens](docs/guia.md)**: cada aba explicada, o editor de layout, as ventoinhas e a solução de problemas.
+
+| Processador | Benchmark | Ventoinhas |
+| --- | --- | --- |
+| ![Processador](docs/imagens/processador.png) | ![Benchmark](docs/imagens/benchmark.png) | ![Ventoinhas](docs/imagens/ventoinhas.png) |
+
+![Os dez temas da tela](docs/imagens/temas.png)
 
 ## O que faz
 
@@ -40,14 +50,13 @@ App .NET 10 + Avalonia que ajusta o processador Ryzen de dentro do Windows e con
 ## Requisitos
 
 - Windows 10/11 x64, executado como administrador (o app pede elevação)
-- .NET 10 SDK
-- Driver [PawnIO](https://pawnio.eu/):
+- .NET 10 SDK, só para compilar; o instalador já leva o .NET
+- Driver [PawnIO](https://pawnio.eu/), que o instalador também instala. À mão:
 
 ```bash
 winget install namazso.PawnIO
 ```
 
-- Placa NVIDIA para os sensores de GPU (usa a NVML do driver)
 - O MACH1-LCD precisa estar fechado para o app usar a tela
 
 ## Instalar
@@ -65,7 +74,7 @@ Para gerar o instalador a partir do código, veja `gerar-instalador.cmd` e `inst
 - **Temperatura do processador**: exige o driver PawnIO. Em Ryzen suportado vem do SMU; nos demais (Intel, por exemplo), da LibreHardwareMonitor.
 - **Placa de vídeo**: NVIDIA pela NVML; AMD e Intel pela LibreHardwareMonitor.
 - A faixa de margem (-40 em Zen 4/5, -30 antes), o limite de temperatura e os limites de PBO iniciais vêm do próprio processador.
-- **Tela**: testada só com a IRV360 (USB `1600:3005`, 720x1280). As outras telas da linha (IEV360, IMV360, AV360) são procuradas pelo fabricante no USB e usam a resolução informada na aba da tela; as páginas se rearranjam para tela deitada ou quadrada (ver `formatos.png`). Nada disso foi testado com essas telas.
+- **Tela**: testada só com a IRV360 (USB `1600:3005`, 720x1280). As outras telas da linha (IEV360, IMV360, AV360) são procuradas pelo fabricante no USB e usam a resolução informada na aba da tela; as páginas se rearranjam para tela deitada ou quadrada (ver [`docs/imagens/formatos.png`](docs/imagens/formatos.png)). Nada disso foi testado com essas telas.
 
 ### Levar para outro PC
 
@@ -107,6 +116,8 @@ Argumentos:
   - `Controls/ScoreBars.cs`, `DotPlot.cs`, `TimeChart.cs` — gráficos
   - `Services/StabilityTester.cs`, `StartupGuard.cs`, `StartupTask.cs`
   - `ViewModels/MainViewModel*.cs` — uma parte por área (processador, tela, teste, jogos, inicialização)
+- `docs/` — guia de uso e imagens
+- `installer/` — script do instalador (Inno Setup)
 - `ext/zsc/` — cópia do código da [ZenStates-Core](https://github.com/irusanov/ZenStates-Core) (GPL-3.0)
 
 As opções e o perfil ficam em `%AppData%\Mach1CustomApp\profile.json`.
