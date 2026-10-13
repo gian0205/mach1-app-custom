@@ -52,7 +52,7 @@ winget install namazso.PawnIO
 
 ## Instalar
 
-Baixe o `MACH1-custom-app-setup-<versão>.exe` na página de releases do repositório e execute. O instalador já leva o .NET, instala o driver PawnIO se ele ainda não estiver na máquina e coloca um `ffmpeg.exe` ao lado do app para o vídeo de fundo. Na desinstalação, o PawnIO e as suas configurações em `%AppData%Mach1CustomApp` ficam.
+Baixe o `MACH1-custom-app-setup-<versão>.exe` na página de releases do repositório e execute. O instalador já leva o .NET, instala o driver PawnIO se ele ainda não estiver na máquina e coloca um `ffmpeg.exe` ao lado do app para o vídeo de fundo. Na desinstalação, o PawnIO e as suas configurações em `%AppData%\Mach1CustomApp` ficam.
 
 Para gerar o instalador a partir do código, veja `gerar-instalador.cmd` e `installer/setup.iss`. As licenças dos componentes de terceiros estão em `LICENCAS.md`.
 
