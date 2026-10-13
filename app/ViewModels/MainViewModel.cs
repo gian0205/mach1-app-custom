@@ -28,7 +28,7 @@ public partial class MainViewModel : ViewModelBase, IDisposable
     [
         nameof(ApplyOnStart), nameof(CloseToTray),
         nameof(LcdEnabled), nameof(LcdBrightness), nameof(LcdFlipped),
-        nameof(LcdBackground), nameof(LcdText), nameof(LcdAccent),
+        nameof(LcdBackground), nameof(LcdText), nameof(LcdAccent), nameof(LcdNeon),
         nameof(LcdPageMode), nameof(LcdPageSeconds), nameof(LcdImagePath), nameof(LcdImageDim),
         nameof(AlertEnabled), nameof(AlertCpu), nameof(AlertGpu),
         nameof(TempColorsEnabled), nameof(CpuWarmAt), nameof(CpuHotAt), nameof(GpuWarmAt), nameof(GpuHotAt),

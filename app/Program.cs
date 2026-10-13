@@ -168,7 +168,7 @@ sealed class Program
         {
             LcdThemePreset preset = LcdThemePreset.All[i];
             // Nos temas claros a temperatura vai em faixa de aviso, para conferir o laranja.
-            LcdContent shown = i >= 8 ? warm : content;
+            LcdContent shown = i is 8 or 9 ? warm : content;
             File.WriteAllBytes(Path.Combine(directory, $"tema-{i + 1:00}-{preset.Name}.jpg"),
                 renderer.Render(shown, new LcdStyle(preset.Theme, false, LcdPage.Temperatures, false, 55), null));
         }

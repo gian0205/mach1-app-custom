@@ -49,6 +49,9 @@ public sealed class Profile
 
     public string? LcdAccent { get; set; }
 
+    /// <summary>Barras e temperaturas com efeito de neon aceso.</summary>
+    public bool LcdNeon { get; set; }
+
     /// <summary>0 = temperaturas e sensores, 1 = Curve Optimizer, 2 = alterna as duas, 3 = layout personalizado.</summary>
     public int LcdPageMode { get; set; }
 

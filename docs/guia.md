@@ -75,9 +75,15 @@ A imagem acima mostra a página de temperaturas, a página do Curve Optimizer e 
 
 ![Temas, cores e conteúdo](imagens/tela-aparencia.png)
 
-Clique em um dos dez temas prontos ou escolha a cor do fundo, do texto e das temperaturas e barras uma a uma. **Voltar ao visual padrão** desfaz tudo.
+Clique em um dos temas prontos ou escolha a cor do fundo, do texto e das temperaturas e barras uma a uma. **Voltar ao visual padrão** desfaz tudo.
 
-![Os dez temas](imagens/temas.png)
+![Os dez temas de cor](imagens/temas.png)
+
+Há também seis temas neon: Neon ciano, Neon rosa, Neon verde, Neon roxo, Neon azul e Synthwave. Neles as barras são desenhadas como tubos de neon acesos, com halo de luz e o miolo mais claro, e as temperaturas brilham na mesma cor.
+
+![Os seis temas neon](imagens/temas-neon.png)
+
+O efeito é uma opção à parte, **Efeito neon nas barras e temperaturas**, logo abaixo das cores. Dá para ligá-lo com qualquer combinação de cores; fica melhor com fundo bem escuro e uma cor viva. As capturas da janela neste guia são de antes desses temas e não mostram a opção.
 
 **Fundo com imagem, GIF ou vídeo**
 

@@ -303,6 +303,9 @@
                                     <TextBlock Grid.Row="2" Text="Cor das temperaturas e barras" VerticalAlignment="Center" />
                                     <ColorPicker Grid.Row="2" Grid.Column="1" Color="{Binding LcdAccent}" IsAlphaEnabled="False" />
                                 </Grid>
+                                <CheckBox Content="Efeito neon nas barras e temperaturas" IsChecked="{Binding LcdNeon}" />
+                                <TextBlock Classes="muted" TextWrapping="Wrap"
+                                           Text="As barras viram tubos acesos, com halo de luz. Fica melhor com fundo bem escuro e uma cor viva; os temas Neon já vêm assim." />
                                 <TextBlock Classes="muted"
                                            Text="Perto do limite a temperatura troca para as cores de atenção e crítica, que se ajustam mais abaixo, em Cores da temperatura." />
                                 <Button Content="Voltar ao visual padrão" Command="{Binding RestoreLcdAppearanceCommand}" />

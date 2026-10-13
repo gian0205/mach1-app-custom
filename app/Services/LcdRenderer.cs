@@ -44,7 +44,8 @@ public readonly record struct LcdTempColors(bool Enabled, float CpuWarm, float C
 }
 
 /// <summary>Cores do painel escolhidas pelo usuário, em 0xAARRGGBB.</summary>
-public readonly record struct LcdTheme(uint Background, uint Text, uint Accent)
+/// <param name="Neon">Barras e temperaturas desenhadas como tubos de neon acesos, com halo de luz.</param>
+public readonly record struct LcdTheme(uint Background, uint Text, uint Accent, bool Neon = false)
 {
     public static LcdTheme Default { get; } = new(0xFF171B24, 0xFFE6E9F0, 0xFF7CC4F2);
 }
@@ -68,6 +69,13 @@ public sealed record LcdThemePreset(string Name, LcdTheme Theme)
         new("Carbono", new(0xFF161616, 0xFFF0F0F0, 0xFFC9CED6)),
         new("Areia", new(0xFFEFEAE0, 0xFF2A2722, 0xFF2F6F8F)),
         new("Papel", new(0xFFF5F6F8, 0xFF1B1F27, 0xFF2563C9)),
+        // Neon: fundo quase preto, uma cor saturada e o efeito de tubo aceso.
+        new("Neon ciano", new(0xFF06090F, 0xFFE6F9FF, 0xFF00E5FF, Neon: true)),
+        new("Neon rosa", new(0xFF0E0610, 0xFFFFE8F6, 0xFFFF3DCB, Neon: true)),
+        new("Neon verde", new(0xFF050B07, 0xFFE9FFEA, 0xFF39FF14, Neon: true)),
+        new("Neon roxo", new(0xFF0A0716, 0xFFF1E8FF, 0xFFC04DFF, Neon: true)),
+        new("Neon azul", new(0xFF050A14, 0xFFE6F0FF, 0xFF2E9BFF, Neon: true)),
+        new("Synthwave", new(0xFF140A26, 0xFFFBE9FF, 0xFF2DE2E6, Neon: true)),
     ];
 }
 
@@ -115,6 +123,7 @@ public sealed class LcdRenderer : IDisposable
 
     private SKColor _text, _accent, _muted, _track;
     private SKColor? _halo;
+    private bool _neon;
 
     /// <param name="quality">Qualidade do JPEG, de 0 a 100; menor dá quadros menores, que chegam mais rápido à tela.</param>
     /// <param name="layout">Layout personalizado; só é usado na página <see cref="LcdPage.Custom"/>.</param>
@@ -137,9 +146,13 @@ public sealed class LcdRenderer : IDisposable
 
         _text = new SKColor(style.Theme.Text);
         _accent = new SKColor(style.Theme.Accent);
+        _neon = style.Theme.Neon;
         // Em fundo claro os rótulos precisam ficar mais perto da cor do texto para dar leitura.
         _muted = Blend(background, _text, light ? 0.72f : 0.58f);
         _track = Blend(background, _text, 0.13f);
+        // Tubo apagado: quase some no fundo, com um resto da cor do tema.
+        if (_neon)
+            _track = Blend(background, _accent, 0.16f);
 
         using var canvas = new SKCanvas(_bitmap);
         canvas.Clear(background);
@@ -362,9 +375,7 @@ public sealed class LcdRenderer : IDisposable
                 float x = barLeft + (barRight - barLeft) * (Math.Clamp(margin, min, max) - min) / (max - min);
                 if (Math.Abs(x - zero) >= 1)
                 {
-                    _paint.Color = margin < 0 ? _accent : Ember;
-                    canvas.DrawRoundRect(Math.Min(zero, x), center - thickness / 2, Math.Abs(x - zero), thickness,
-                        thickness / 2, thickness / 2, _paint);
+                    DrawFill(canvas, Math.Min(zero, x), center - thickness / 2, Math.Abs(x - zero), thickness, margin < 0 ? _accent : Ember);
                 }
                 // A Bahnschrift não tem o sinal de menos tipográfico; usa o hífen.
                 DrawText(canvas, margin.ToString("+0;-0;0"), marginRight, baseline, fontSize, _text, _regular, SKTextAlign.Right);
@@ -432,9 +443,42 @@ public sealed class LcdRenderer : IDisposable
         canvas.DrawRoundRect(x, y, width, height, radius, radius, _paint);
         if (fraction is float f && !float.IsNaN(f))
         {
-            _paint.Color = color;
-            canvas.DrawRoundRect(x, y, Math.Max(height, width * Math.Clamp(f, 0, 1)), height, radius, radius, _paint);
+            DrawFill(canvas, x, y, Math.Max(height, width * Math.Clamp(f, 0, 1)), height, color);
         }
+    }
+
+    /// <summary>
+    /// A parte preenchida de uma barra. Em tema neon ela vira um tubo aceso: um halo largo e
+    /// outro curto na cor do tubo, o tubo, e um miolo quase branco, que é o que dá a impressão de luz.
+    /// </summary>
+    private void DrawFill(SKCanvas canvas, float x, float y, float width, float height, SKColor color)
+    {
+        float radius = height / 2;
+        if (!_neon)
+        {
+            _paint.Color = color;
+            canvas.DrawRoundRect(x, y, width, height, radius, radius, _paint);
+            return;
+        }
+
+        using (SKMaskFilter wide = SKMaskFilter.CreateBlur(SKBlurStyle.Normal, height * 1.9f))
+        using (SKMaskFilter tight = SKMaskFilter.CreateBlur(SKBlurStyle.Normal, height * 0.6f))
+        {
+            _paint.MaskFilter = wide;
+            _paint.Color = color.WithAlpha(150);
+            canvas.DrawRoundRect(x, y - height * 0.4f, width, height * 1.8f, height * 0.9f, height * 0.9f, _paint);
+            _paint.MaskFilter = tight;
+            _paint.Color = color;
+            canvas.DrawRoundRect(x, y, width, height, radius, radius, _paint);
+            _paint.MaskFilter = null;
+        }
+
+        _paint.Color = color;
+        canvas.DrawRoundRect(x, y, width, height, radius, radius, _paint);
+
+        float core = height * 0.36f, inset = Math.Min(height * 0.45f, width / 4);
+        _paint.Color = Blend(color, SKColors.White, 0.82f);
+        canvas.DrawRoundRect(x + inset, y + (height - core) / 2, Math.Max(core, width - inset * 2), core, core / 2, core / 2, _paint);
     }
 
     private void DrawText(SKCanvas canvas, string text, float x, float y, float size, SKColor color,
@@ -450,6 +494,19 @@ public sealed class LcdRenderer : IDisposable
             canvas.DrawText(text, x, y, align, font, _paint);
             _paint.Style = SKPaintStyle.Fill;
         }
+        // Em tema neon, o que está na cor de destaque ou de aviso brilha; rótulos e texto comum não.
+        if (_neon && color != _text && color != _muted)
+        {
+            using SKMaskFilter glow = SKMaskFilter.CreateBlur(SKBlurStyle.Normal, Math.Clamp(size * 0.11f, 3, 22));
+            _paint.MaskFilter = glow;
+            _paint.Color = color.WithAlpha(170);
+            canvas.DrawText(text, x, y, align, font, _paint);
+            _paint.MaskFilter = null;
+            _paint.Color = Blend(color, SKColors.White, 0.35f);
+            canvas.DrawText(text, x, y, align, font, _paint);
+            return;
+        }
+
         _paint.Color = color;
         canvas.DrawText(text, x, y, align, font, _paint);
     }

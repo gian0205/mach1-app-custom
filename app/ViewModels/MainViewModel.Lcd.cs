@@ -187,6 +187,7 @@ public partial class MainViewModel
         if (Color.TryParse(profile.LcdBackground, out Color background)) LcdBackground = background;
         if (Color.TryParse(profile.LcdText, out Color text)) LcdText = text;
         if (Color.TryParse(profile.LcdAccent, out Color accent)) LcdAccent = accent;
+        LcdNeon = profile.LcdNeon;
         LcdPageMode = Math.Clamp(profile.LcdPageMode, 0, CustomPageMode);
         LcdPageSeconds = profile.LcdPageSeconds;
         LcdImagePath = profile.LcdImagePath;
@@ -214,6 +215,7 @@ public partial class MainViewModel
         profile.LcdBackground = LcdBackground.ToString();
         profile.LcdText = LcdText.ToString();
         profile.LcdAccent = LcdAccent.ToString();
+        profile.LcdNeon = LcdNeon;
         profile.LcdPageMode = LcdPageMode;
         profile.LcdPageSeconds = (int)(LcdPageSeconds ?? 8);
         profile.LcdImagePath = LcdImagePath;
@@ -244,7 +246,7 @@ public partial class MainViewModel
     }
 
     private void PushLcdSettings() => _lcd.Settings = new LcdSettings(
-        new LcdTheme(LcdBackground.ToUInt32(), LcdText.ToUInt32(), LcdAccent.ToUInt32()),
+        new LcdTheme(LcdBackground.ToUInt32(), LcdText.ToUInt32(), LcdAccent.ToUInt32(), LcdNeon),
         LcdFlipped,
         LcdPageMode,
         (int)(LcdPageSeconds ?? 8),
@@ -266,6 +268,12 @@ public partial class MainViewModel
     partial void OnLcdTextChanged(Color value) => PushLcdSettings();
 
     partial void OnLcdAccentChanged(Color value) => PushLcdSettings();
+
+    /// <summary>Barras e temperaturas como tubos de neon acesos.</summary>
+    [ObservableProperty]
+    private bool _lcdNeon;
+
+    partial void OnLcdNeonChanged(bool value) => PushLcdSettings();
 
     partial void OnLcdPageModeChanged(int value) => PushLcdSettings();
 
@@ -342,6 +350,7 @@ public partial class MainViewModel
         LcdBackground = Color.FromUInt32(swatch.Preset.Theme.Background);
         LcdText = Color.FromUInt32(swatch.Preset.Theme.Text);
         LcdAccent = Color.FromUInt32(swatch.Preset.Theme.Accent);
+        LcdNeon = swatch.Preset.Theme.Neon;
     }
 
     /// <summary>Volta as cores originais do painel e tira a imagem ou o vídeo de fundo.</summary>
@@ -351,6 +360,7 @@ public partial class MainViewModel
         LcdBackground = Color.FromUInt32(LcdTheme.Default.Background);
         LcdText = Color.FromUInt32(LcdTheme.Default.Text);
         LcdAccent = Color.FromUInt32(LcdTheme.Default.Accent);
+        LcdNeon = false;
         LcdImagePath = null;
         LcdImageDim = 55;
     }
