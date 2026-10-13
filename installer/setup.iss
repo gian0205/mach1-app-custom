@@ -46,6 +46,7 @@ Source: "..\dist\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs creat
 Source: "deps\ffmpeg.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "deps\ffmpeg-LICENSE.txt"; DestDir: "{app}\licencas"; Flags: ignoreversion
 Source: "..\LICENCAS.md"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\LICENSE"; DestDir: "{app}"; DestName: "LICENSE.txt"; Flags: ignoreversion
 ; Driver PawnIO: só é executado se ainda não estiver instalado (ver PawnIONeeded).
 Source: "deps\PawnIO_setup.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall
 
