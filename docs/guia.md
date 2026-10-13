@@ -206,7 +206,7 @@ A curva reage rápido quando esquenta e devagar quando esfria, para a ventoinha 
 
 ![Aba de LEDs](imagens/leds.png)
 
-Esta aba controla os LEDs RGB do PC por meio do [OpenRGB](https://openrgb.org/). O app não fala direto com os LEDs: ele manda a cor para o OpenRGB, que conhece a placa-mãe, a memória, a placa de vídeo e os controladores. Na imagem acima os dois dispositivos são de um servidor de teste.
+Esta aba controla os LEDs RGB do PC por meio do [OpenRGB](https://openrgb.org/). O app não fala direto com os LEDs: ele manda a cor para o OpenRGB, que conhece a placa-mãe, a memória, a placa de vídeo e os controladores. Na imagem acima, o OpenRGB 1.0 encontrou os dois módulos de memória, a placa-mãe e um controle DualSense, que foi deixado de fora.
 
 **Preparar o OpenRGB**
 
@@ -228,7 +228,7 @@ Esta aba controla os LEDs RGB do PC por meio do [OpenRGB](https://openrgb.org/).
 - Todos os LEDs de um dispositivo recebem a mesma cor; não há efeitos nem cor por LED.
 - Dois programas mandando cor para o mesmo LED brigam entre si. Feche ou desative no L-Connect, no SignalRGB e nos programas da placa-mãe o que for controlado pelo app.
 - Ao desligar a opção ou fechar o app, os LEDs ficam na última cor enviada.
-- A integração foi testada com um servidor de teste que imita o OpenRGB, não com o OpenRGB de verdade nem com LEDs.
+- Testado com o OpenRGB 1.0, memória XPG (ENE DRAM) e placa-mãe ASRock X870 Pro RS. O OpenRGB não encontrou as ventoinhas sem fio da Lian Li nesse PC, então elas ficam de fora.
 
 ## Geral
 
