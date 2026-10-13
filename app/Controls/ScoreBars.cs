@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Mach1DriverCustom.Controls;
+namespace Mach1CustomApp.Controls;
 
 /// <summary>
 /// Uma medida, uma barra horizontal por teste, todas a partir do zero. Como a diferença entre

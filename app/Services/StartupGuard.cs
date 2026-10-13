@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace Mach1DriverCustom.Services;
+namespace Mach1CustomApp.Services;
 
 /// <summary>
 /// Proteção contra curva instável aplicada no logon: um arquivo marcador é criado antes de

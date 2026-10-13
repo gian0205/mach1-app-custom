@@ -2,10 +2,12 @@ using HidSharp;
 using System;
 using System.Text;
 
-namespace Mach1DriverCustom.Services;
+namespace Mach1CustomApp.Services;
 
 /// <summary>
-/// Tela LCD do water cooler (USB 1600:3005, "HOTSPOTEKUSB HID DEMO"), 720x1280.
+/// Tela LCD do water cooler. Testada com a IRV360 (USB 1600:3005, "HOTSPOTEKUSB HID DEMO",
+/// 720x1280); as outras telas da mesma fabricante são procuradas por <see cref="LcdScreen"/> e
+/// devem falar o mesmo protocolo, o que ainda não foi verificado.
 /// Protocolo levantado por captura do tráfego do MACH1-LCD: relatórios HID de saída de 1024
 /// bytes, cada comando começando por "CRT\0\0" e três letras:
 ///   CONNECT  mantém a conexão (o app original manda a cada ~10 s)
@@ -16,11 +18,6 @@ namespace Mach1DriverCustom.Services;
 /// </summary>
 public sealed class LcdDevice : IDisposable
 {
-    public const int Width = 720;
-    public const int Height = 1280;
-
-    private const int VendorId = 0x1600;
-    private const int ProductId = 0x3005;
     private const int PacketSize = 1024;
     private const int FrameHeaderSize = 32;
 
@@ -29,11 +26,9 @@ public sealed class LcdDevice : IDisposable
     // Byte 0 é o ID do relatório (0); a API HID do Windows exige que ele vá junto.
     private readonly byte[] _report = new byte[PacketSize + 1];
 
-    public static bool IsPresent => DeviceList.Local.GetHidDeviceOrNull(VendorId, ProductId) is not null;
-
     public LcdDevice()
     {
-        HidDevice device = DeviceList.Local.GetHidDeviceOrNull(VendorId, ProductId)
+        HidDevice device = LcdScreen.Find()?.Device
             ?? throw new InvalidOperationException("Tela do water cooler não encontrada.");
 
         if (!device.TryOpen(out _stream))

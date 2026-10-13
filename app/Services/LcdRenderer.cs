@@ -1,11 +1,11 @@
 using SkiaSharp;
 using System;
-using Mach1DriverCustom.Models;
+using Mach1CustomApp.Models;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
-namespace Mach1DriverCustom.Services;
+namespace Mach1CustomApp.Services;
 
 public enum LcdPage
 {
@@ -83,8 +83,11 @@ public readonly record struct LcdStyle(LcdTheme Theme, bool Flipped, LcdPage Pag
 /// </summary>
 public sealed class LcdRenderer : IDisposable
 {
+    // As páginas prontas são desenhadas em colunas de 720 unidades de largura, que depois são
+    // escaladas e arrumadas conforme o formato da tela (ver DrawPages).
+    private const float ColumnWidth = 720;
     private const float Left = 56;
-    private const float Right = LcdDevice.Width - 56;
+    private const float Right = ColumnWidth - 56;
 
     // Placas de vídeo costumam se limitar perto de 90 °C; o limite do processador vem no conteúdo.
     private const float GpuMax = 90;
@@ -100,7 +103,7 @@ public sealed class LcdRenderer : IDisposable
     private LcdTempColors _temps;
     private SKColor _warn, _hot;
 
-    private readonly SKBitmap _bitmap = new(LcdDevice.Width, LcdDevice.Height, SKColorType.Rgba8888, SKAlphaType.Opaque);
+    private readonly SKBitmap _bitmap = new(LcdScreen.Width, LcdScreen.Height, SKColorType.Rgba8888, SKAlphaType.Opaque);
     private readonly SKTypeface _regular = SKTypeface.FromFamilyName("Bahnschrift", SKFontStyle.Normal);
     private readonly SKTypeface _light = SKTypeface.FromFamilyName("Bahnschrift",
         SKFontStyleWeight.Light, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright);
@@ -137,7 +140,7 @@ public sealed class LcdRenderer : IDisposable
         using var canvas = new SKCanvas(_bitmap);
         canvas.Clear(background);
         if (style.Flipped)
-            canvas.RotateDegrees(180, LcdDevice.Width / 2f, LcdDevice.Height / 2f);
+            canvas.RotateDegrees(180, LcdScreen.Width / 2f, LcdScreen.Height / 2f);
 
         // Sobre imagem ou vídeo o texto ganha um contorno na cor de fundo, para não sumir.
         _halo = backgroundImage is null ? null : background.WithAlpha(150);
@@ -150,11 +153,7 @@ public sealed class LcdRenderer : IDisposable
         }
         else
         {
-            DrawHeader(canvas, content);
-            if (style.Page == LcdPage.Curve)
-                DrawCurvePage(canvas, content);
-            else
-                DrawTemperaturesPage(canvas, content);
+            DrawPages(canvas, content, style.Page);
         }
 
         if (style.AlertFlash)
@@ -162,7 +161,7 @@ public sealed class LcdRenderer : IDisposable
             _paint.Color = Critical;
             _paint.Style = SKPaintStyle.Stroke;
             _paint.StrokeWidth = 24;
-            canvas.DrawRect(12, 12, LcdDevice.Width - 24, LcdDevice.Height - 24, _paint);
+            canvas.DrawRect(12, 12, LcdScreen.Width - 24, LcdScreen.Height - 24, _paint);
             _paint.Style = SKPaintStyle.Fill;
         }
 
@@ -175,13 +174,13 @@ public sealed class LcdRenderer : IDisposable
     /// <summary>Preenche a tela com a imagem (cortando as sobras) e a escurece para o texto continuar legível.</summary>
     private void DrawBackgroundImage(SKCanvas canvas, SKImage image, SKColor background, int dim)
     {
-        float scale = Math.Max(LcdDevice.Width / (float)image.Width, LcdDevice.Height / (float)image.Height);
+        float scale = Math.Max(LcdScreen.Width / (float)image.Width, LcdScreen.Height / (float)image.Height);
         float width = image.Width * scale, height = image.Height * scale;
-        var target = SKRect.Create((LcdDevice.Width - width) / 2, (LcdDevice.Height - height) / 2, width, height);
+        var target = SKRect.Create((LcdScreen.Width - width) / 2, (LcdScreen.Height - height) / 2, width, height);
         canvas.DrawImage(image, target, new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.None));
 
         _paint.Color = background.WithAlpha((byte)(255 * Math.Clamp(dim, 0, 100) / 100));
-        canvas.DrawRect(0, 0, LcdDevice.Width, LcdDevice.Height, _paint);
+        canvas.DrawRect(0, 0, LcdScreen.Width, LcdScreen.Height, _paint);
     }
 
     private void DrawHeader(SKCanvas canvas, LcdContent content)
@@ -193,19 +192,100 @@ public sealed class LcdRenderer : IDisposable
         DrawText(canvas, content.Time.ToString("HH:mm"), Right, 104, 44, _muted, _regular, SKTextAlign.Right);
     }
 
-    private void DrawTemperaturesPage(SKCanvas canvas, LcdContent content)
+    /// <summary>
+    /// Arruma a página no formato da tela. Tela em pé: uma coluna, como na IRV360. Tela deitada:
+    /// duas colunas lado a lado. Tela quase quadrada: uma coluna com as duas temperaturas lado a
+    /// lado, em metade do tamanho. Em todos os casos, o que não cabe na altura fica de fora.
+    /// </summary>
+    private void DrawPages(SKCanvas canvas, LcdContent content, LcdPage page)
     {
+        float width = LcdScreen.Width, height = LcdScreen.Height, ratio = width / height;
         SensorSnapshot sensors = content.Sensors;
-        GpuReading gpu = sensors.Gpu;
-        DrawBigTemperature(canvas, "Processador", sensors.CpuTemperature, 150, decimals: 1, _temps.CpuWarm, _temps.CpuHot, content.CpuLimit);
-        DrawBigTemperature(canvas, "Placa de vídeo", gpu.Temperature, 410, decimals: 0, _temps.GpuWarm, _temps.GpuHot, GpuMax);
 
-        float y = 722;
-        DrawSensorRow(canvas, ref y, "Uso do processador", Percent(sensors.CpuLoad), sensors.CpuLoad / 100);
-        DrawSensorRow(canvas, ref y, "Uso da placa de vídeo", Percent(gpu.Load), gpu.Load / 100);
-        DrawSensorRow(canvas, ref y, "Memória", Gigabytes(sensors.RamUsedGb, sensors.RamTotalGb), sensors.RamUsedGb / sensors.RamTotalGb);
-        DrawSensorRow(canvas, ref y, "Memória de vídeo", Gigabytes(gpu.MemoryUsedGb, gpu.MemoryTotalGb), gpu.MemoryUsedGb / gpu.MemoryTotalGb);
-        DrawSensorRow(canvas, ref y, "Consumo da placa de vídeo", gpu.Watts is float w ? $"{w:0} W" : "—", null);
+        void Temperatures(float top) { DrawCpuTemperature(canvas, content, top); DrawGpuTemperature(canvas, sensors.Gpu, top + 260); }
+
+        canvas.Save();
+        if (ratio >= 1.25f)
+        {
+            // Deitada: cabeçalho e temperaturas à esquerda, o resto à direita.
+            float scale = Math.Min(width / (2 * ColumnWidth), height / 700);
+            float logicalHeight = height / scale;
+            canvas.Translate((width - 2 * ColumnWidth * scale) / 2, 0);
+            canvas.Scale(scale);
+
+            DrawHeader(canvas, content);
+            Temperatures(150);
+            canvas.Translate(ColumnWidth, 0);
+            if (page == LcdPage.Curve)
+                DrawCurveTable(canvas, content, 104, logicalHeight - 104 - 60);
+            else
+                DrawSensorRows(canvas, sensors, 104, logicalHeight);
+        }
+        else
+        {
+            float scale = width / ColumnWidth;
+            float logicalHeight = height / scale;
+            canvas.Scale(scale);
+            DrawHeader(canvas, content);
+
+            if (ratio > 0.8f)
+            {
+                // Quase quadrada: as duas temperaturas dividem a largura.
+                canvas.Save();
+                canvas.Translate(0, 150);
+                canvas.Scale(0.5f);
+                DrawCpuTemperature(canvas, content, 0);
+                canvas.Translate(ColumnWidth, 0);
+                DrawGpuTemperature(canvas, sensors.Gpu, 0);
+                canvas.Restore();
+
+                if (page == LcdPage.Curve)
+                    DrawCurveTable(canvas, content, 350, logicalHeight - 350 - 50);
+                else
+                    DrawSensorRows(canvas, sensors, 350, logicalHeight);
+            }
+            else if (page == LcdPage.Curve)
+            {
+                DrawSmallTemperature(canvas, "Processador", sensors.CpuTemperature, Left, 1, _temps.CpuWarm, _temps.CpuHot);
+                DrawSmallTemperature(canvas, "Placa de vídeo", sensors.Gpu.Temperature, 392, 0, _temps.GpuWarm, _temps.GpuHot);
+                DrawCurveTable(canvas, content, 372, logicalHeight - 372 - 108);
+            }
+            else
+            {
+                Temperatures(150);
+                DrawSensorRows(canvas, sensors, 722, logicalHeight);
+            }
+        }
+        canvas.Restore();
+    }
+
+    private void DrawCpuTemperature(SKCanvas canvas, LcdContent content, float top) =>
+        DrawBigTemperature(canvas, "Processador", content.Sensors.CpuTemperature, top, decimals: 1, _temps.CpuWarm, _temps.CpuHot, content.CpuLimit);
+
+    private void DrawGpuTemperature(SKCanvas canvas, GpuReading gpu, float top) =>
+        DrawBigTemperature(canvas, "Placa de vídeo", gpu.Temperature, top, decimals: 0, _temps.GpuWarm, _temps.GpuHot, GpuMax);
+
+    /// <summary>As linhas de sensores a partir de <paramref name="top"/>, quantas couberem até <paramref name="bottom"/>.</summary>
+    private void DrawSensorRows(SKCanvas canvas, SensorSnapshot sensors, float top, float bottom)
+    {
+        GpuReading gpu = sensors.Gpu;
+        (string Label, string Value, float? Fraction)[] rows =
+        [
+            ("Uso do processador", Percent(sensors.CpuLoad), sensors.CpuLoad / 100),
+            ("Uso da placa de vídeo", Percent(gpu.Load), gpu.Load / 100),
+            ("Memória", Gigabytes(sensors.RamUsedGb, sensors.RamTotalGb), sensors.RamUsedGb / sensors.RamTotalGb),
+            ("Memória de vídeo", Gigabytes(gpu.MemoryUsedGb, gpu.MemoryTotalGb), gpu.MemoryUsedGb / gpu.MemoryTotalGb),
+            ("Consumo da placa de vídeo", gpu.Watts is float w ? $"{w:0} W" : "—", null),
+        ];
+
+        float y = top;
+        foreach (var row in rows)
+        {
+            // Cada linha ocupa do texto até a barra, 30 unidades abaixo.
+            if (y + 30 > bottom - 20)
+                break;
+            DrawSensorRow(canvas, ref y, row.Label, row.Value, row.Fraction);
+        }
     }
 
     private void DrawBigTemperature(SKCanvas canvas, string label, float? temperature, float top,
@@ -237,13 +317,10 @@ public sealed class LcdRenderer : IDisposable
         y += 104;
     }
 
-    private void DrawCurvePage(SKCanvas canvas, LcdContent content)
+    /// <summary>Título e uma linha por núcleo (barra, margem e clock), dentro da altura disponível.</summary>
+    private void DrawCurveTable(SKCanvas canvas, LcdContent content, float top, float available)
     {
-        SensorSnapshot sensors = content.Sensors;
-        DrawSmallTemperature(canvas, "Processador", sensors.CpuTemperature, Left, 1, _temps.CpuWarm, _temps.CpuHot);
-        DrawSmallTemperature(canvas, "Placa de vídeo", sensors.Gpu.Temperature, 392, 0, _temps.GpuWarm, _temps.GpuHot);
-
-        const float barLeft = 132, barRight = 410, marginRight = 524, top = 372;
+        const float barLeft = 132, barRight = 410, marginRight = 524;
         float min = content.MarginMin, max = CpuTuner.MaxMargin;
 
         DrawText(canvas, "Curve Optimizer", Left, top, 40, _text, _regular);
@@ -254,7 +331,7 @@ public sealed class LcdRenderer : IDisposable
         if (count == 0)
             return;
 
-        float rowHeight = Math.Min(98, 800f / count);
+        float rowHeight = Math.Min(98, Math.Max(10, available - 30) / count);
         float fontSize = Math.Min(44, rowHeight * 0.5f);
         float thickness = Math.Min(14, rowHeight * 0.2f);
         float zero = barLeft + (barRight - barLeft) * (0 - min) / (max - min);

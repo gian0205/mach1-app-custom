@@ -1,16 +1,16 @@
-using Mach1DriverCustom.Models;
+using Mach1CustomApp.Models;
 using System;
 using System.IO;
 using System.Text.Json;
 
-namespace Mach1DriverCustom.Services;
+namespace Mach1CustomApp.Services;
 
 public static class ProfileStore
 {
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
     public static string Directory { get; } = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Mach1DriverCustom");
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Mach1CustomApp");
 
     public static string ProfilePath => Path.Combine(Directory, "profile.json");
 

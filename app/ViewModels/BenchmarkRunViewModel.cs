@@ -1,10 +1,10 @@
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Mach1DriverCustom.Controls;
-using Mach1DriverCustom.Models;
+using Mach1CustomApp.Controls;
+using Mach1CustomApp.Models;
 using System;
 
-namespace Mach1DriverCustom.ViewModels;
+namespace Mach1CustomApp.ViewModels;
 
 /// <summary>Um benchmark salvo, na lista do histórico.</summary>
 public partial class BenchmarkRunViewModel(BenchmarkRun run, Action<BenchmarkRunViewModel> selectionChanged) : ViewModelBase

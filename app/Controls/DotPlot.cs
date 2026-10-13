@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Mach1DriverCustom.Controls;
+namespace Mach1CustomApp.Controls;
 
 /// <summary>
 /// Pontos por categoria (um núcleo por coluna, um ponto por teste). O eixo não começa no zero

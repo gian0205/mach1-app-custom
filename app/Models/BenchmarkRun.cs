@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 
-namespace Mach1DriverCustom.Models;
+namespace Mach1CustomApp.Models;
 
 /// <summary>Uma leitura dos sensores durante o benchmark.</summary>
 public sealed class BenchmarkSample

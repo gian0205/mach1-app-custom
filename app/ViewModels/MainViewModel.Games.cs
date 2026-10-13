@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Mach1DriverCustom.Models;
+using Mach1CustomApp.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -9,7 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Mach1DriverCustom.ViewModels;
+namespace Mach1CustomApp.ViewModels;
 
 // Perfis por jogo: enquanto um executável da lista está aberto, a margem dele vale para todos
 // os núcleos; quando fecha, volta a curva que está na janela.

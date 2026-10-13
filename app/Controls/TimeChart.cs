@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Mach1DriverCustom.Controls;
+namespace Mach1CustomApp.Controls;
 
 /// <summary>
 /// Linhas no tempo, uma por teste, com uma só medida por gráfico. Passar o mouse mostra o valor

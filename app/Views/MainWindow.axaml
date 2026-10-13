@@ -1,16 +1,16 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:Mach1DriverCustom.ViewModels"
-        xmlns:m="using:Mach1DriverCustom.Models"
-        xmlns:c="using:Mach1DriverCustom.Controls"
-        x:Class="Mach1DriverCustom.Views.MainWindow"
+        xmlns:vm="using:Mach1CustomApp.ViewModels"
+        xmlns:m="using:Mach1CustomApp.Models"
+        xmlns:c="using:Mach1CustomApp.Controls"
+        x:Class="Mach1CustomApp.Views.MainWindow"
         x:DataType="vm:MainViewModel"
         Icon="/Assets/avalonia-logo.ico"
         Width="1120" Height="900" MinWidth="980" MinHeight="660"
         WindowStartupLocation="CenterScreen"
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaTitleBarHeightHint="40"
-        Title="MACH1 Driver Custom">
+        Title="MACH1 custom app">
 
     <DockPanel>
     <!-- Faixa do topo: é onde o Avalonia desenha o nome e os botões da janela, e serve para arrastá-la -->
@@ -199,7 +199,7 @@
                     <!-- Prévia do que está indo para a tela -->
                     <StackPanel Spacing="10">
                         <Border Classes="panel" Padding="12">
-                            <Border Width="288" Height="512" CornerRadius="6" ClipToBounds="True"
+                            <Border Width="{Binding PreviewWidth}" Height="{Binding PreviewHeight}" CornerRadius="6" ClipToBounds="True"
                                     Background="{StaticResource Brush.Window}">
                                 <c:LayoutCanvas Source="{Binding LcdPreview}" Flipped="{Binding LcdFlipped}" IsHitTestVisible="False" Focusable="False" />
                             </Border>
@@ -223,6 +223,24 @@
                                 <CheckBox Content="Girar a imagem 180°" IsChecked="{Binding LcdFlipped}" />
                                 <TextBlock Classes="muted"
                                            Text="O MACH1-LCD precisa estar fechado: os dois programas não conseguem usar a tela ao mesmo tempo." />
+                            </StackPanel>
+
+                            <Border Classes="rule" />
+
+                            <StackPanel Spacing="10">
+                                <TextBlock Text="Modelo da tela" Classes="heading" />
+                                <TextBlock Text="{Binding LcdScreenText}" TextWrapping="Wrap" />
+                                <Grid ColumnDefinitions="*,118,118" RowDefinitions="Auto,Auto" ColumnSpacing="10" RowSpacing="4">
+                                    <TextBlock Grid.Column="1" Text="Largura" Classes="muted" />
+                                    <TextBlock Grid.Column="2" Text="Altura" Classes="muted" />
+                                    <TextBlock Grid.Row="1" Text="Resolução, em pixels" VerticalAlignment="Center" />
+                                    <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding LcdWidthSetting}" FormatString="0" Minimum="120" Maximum="2560" Increment="10" />
+                                    <NumericUpDown Grid.Row="1" Grid.Column="2" Value="{Binding LcdHeightSetting}" FormatString="0" Minimum="120" Maximum="2560" Increment="10" />
+                                </Grid>
+                                <TextBlock Classes="muted" Text="{Binding LcdResolutionNote}" />
+                                <Button Content="Voltar para 720 x 1280" Command="{Binding ResetLcdResolutionCommand}" />
+                                <TextBlock Classes="muted"
+                                           Text="O app foi testado com a IRV360 (720 x 1280). Para as outras telas da linha (IEV360, IMV360, AV360), informe a resolução do modelo: as páginas se rearranjam para tela deitada ou quadrada. Com a resolução errada a imagem não aparece ou sai cortada." />
                             </StackPanel>
 
                             <Border Classes="rule" />
@@ -306,7 +324,7 @@
                             <StackPanel Spacing="10">
                                 <TextBlock Text="Cores da temperatura" Classes="heading" />
                                 <CheckBox Content="Mudar a cor da temperatura conforme ela sobe" IsChecked="{Binding TempColorsEnabled}" />
-                                <Grid ColumnDefinitions="*,96,96" RowDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="6"
+                                <Grid ColumnDefinitions="*,118,118" RowDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="6"
                                       IsEnabled="{Binding TempColorsEnabled}">
                                     <TextBlock Grid.Column="1" Text="Atenção" Classes="muted" />
                                     <TextBlock Grid.Column="2" Text="Crítico" Classes="muted" />
@@ -492,6 +510,116 @@
                             </StackPanel>
                             <TextBlock Classes="muted" IsVisible="{Binding HasComparison}"
                                        Text="Os pontos são uma escala própria deste app (cerca de 1000 para um núcleo do 9800X3D) e não se comparam com Cinebench ou Geekbench. Diferenças abaixo de 1 % ficam dentro da variação normal entre duas rodadas." />
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+
+            <!-- ============ Ventoinhas ============ -->
+            <TabItem Header="Ventoinhas">
+                <Grid ColumnDefinitions="*,330" ColumnSpacing="34">
+
+                    <Border Classes="panel">
+                        <DockPanel>
+                            <StackPanel DockPanel.Dock="Top" Spacing="6" Margin="0,0,0,12">
+                                <TextBlock Text="Ventoinhas e bomba" Classes="heading" />
+                                <TextBlock Classes="muted" Text="{Binding FanStatus}" />
+                            </StackPanel>
+
+                            <StackPanel DockPanel.Dock="Bottom" Spacing="14" Margin="0,14,0,0" IsVisible="{Binding FansAvailable}">
+                                <Border Classes="rule" />
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Content="Voltar tudo ao automático" Command="{Binding ResetFansCommand}" />
+                                </StackPanel>
+                            </StackPanel>
+
+                            <ScrollViewer>
+                                <ItemsControl ItemsSource="{Binding Fans}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:FanChannelViewModel">
+                                            <StackPanel Spacing="8" Margin="0,0,14,18">
+                                                <Grid ColumnDefinitions="200,*,Auto" ColumnSpacing="14">
+                                                    <TextBox Text="{Binding Label}" />
+                                                    <TextBlock Grid.Column="1" Text="{Binding RpmText}" Classes="num" />
+                                                    <TextBlock Grid.Column="2" Text="{Binding CurrentText}" Classes="num"
+                                                               Foreground="{StaticResource Brush.TextMuted}" />
+                                                </Grid>
+                                                <TextBlock IsVisible="{Binding IsOrphaned}" TextWrapping="Wrap" Foreground="{StaticResource Brush.Warm}"
+                                                           Text="O app foi encerrado à força com este conector sob o controle dele, e a placa-mãe não o reassumiu. Até o PC reiniciar, o app o mantém pela curva abaixo mesmo no modo automático." />
+                                                <ComboBox SelectedIndex="{Binding Mode}" Width="260">
+                                                    <ComboBoxItem Content="Automático da placa-mãe" />
+                                                    <ComboBoxItem Content="Velocidade fixa" />
+                                                    <ComboBoxItem Content="Curva por temperatura" />
+                                                </ComboBox>
+
+                                                <Grid ColumnDefinitions="*,56" ColumnSpacing="14" IsVisible="{Binding IsFixed}" Classes="reveal">
+                                                    <Slider Minimum="{Binding Minimum}" Maximum="100" Value="{Binding Percent}"
+                                                            TickFrequency="5" IsSnapToTickEnabled="True" />
+                                                    <TextBlock Grid.Column="1" Text="{Binding PercentText}" Classes="num" HorizontalAlignment="Right" />
+                                                </Grid>
+
+                                                <StackPanel Spacing="8" IsVisible="{Binding ShowsCurve}" Classes="reveal">
+                                                    <Grid ColumnDefinitions="Auto,260,*" ColumnSpacing="14">
+                                                        <TextBlock Text="Seguir a temperatura" VerticalAlignment="Center" />
+                                                        <ComboBox Grid.Column="1" SelectedIndex="{Binding Source}" HorizontalAlignment="Stretch">
+                                                            <ComboBoxItem Content="do processador" />
+                                                            <ComboBoxItem Content="da placa de vídeo" />
+                                                        </ComboBox>
+                                                    </Grid>
+                                                    <c:FanCurveEditor Height="190" Points="{Binding Points}" Floor="{Binding Minimum}"
+                                                                      CurrentTemperature="{Binding CurveTemperature}" />
+                                                    <Grid ColumnDefinitions="*,Auto">
+                                                        <TextBlock Classes="muted" Text="{Binding CurveText}" VerticalAlignment="Center" />
+                                                        <Button Grid.Column="1" Content="Curva sugerida" Command="{Binding ResetCurveCommand}" />
+                                                    </Grid>
+                                                </StackPanel>
+
+                                                <CheckBox Content="Este conector é a bomba" IsChecked="{Binding IsPump}" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </DockPanel>
+                    </Border>
+
+                    <ScrollViewer Grid.Column="1">
+                        <StackPanel Spacing="18" Margin="0,6,14,0">
+                            <StackPanel Spacing="10">
+                                <TextBlock Text="Como funciona" Classes="heading" />
+                                <TextBlock Classes="muted"
+                                           Text="Cada bloco é um conector da placa-mãe com algo ligado. No automático, quem manda é a curva da BIOS. Em velocidade fixa, o conector fica na porcentagem escolhida. Na curva por temperatura, o app ajusta a velocidade a cada segundo." />
+                                <TextBlock Classes="muted"
+                                           Text="A placa-mãe só chama os conectores de Fan #1, Fan #2 e assim por diante. Para saber qual é qual, fixe um de cada vez em 100 % e veja o que acelera; depois dê um nome a ele." />
+                            </StackPanel>
+
+                            <Border Classes="rule" />
+
+                            <StackPanel Spacing="10">
+                                <TextBlock Text="Proteções" Classes="heading" />
+                                <TextBlock Classes="muted"
+                                           Text="Ventoinha não desce de 20 % e bomba não desce de 60 %. Marque qual conector é a bomba para valer o mínimo dela." />
+                                <TextBlock Classes="muted"
+                                           Text="Se o processador chegar a 8 °C do limite, o app devolve tudo ao automático, seja velocidade fixa ou curva, e só retoma depois de esfriar. Ao fechar o app, tudo volta ao automático." />
+                            </StackPanel>
+
+                            <Border Classes="rule" />
+
+                            <StackPanel Spacing="10">
+                                <TextBlock Text="Curva" Classes="heading" />
+                                <TextBlock Classes="muted"
+                                           Text="Arraste os pontos: para os lados muda a temperatura, para cima e para baixo a velocidade. A linha vertical mostra a temperatura de agora. Antes do primeiro ponto e depois do último a velocidade fica constante." />
+                                <TextBlock Classes="muted"
+                                           Text="A curva reage rápido quando esquenta e devagar quando esfria, para a ventoinha não ficar acelerando e desacelerando. Ela só funciona com o app aberto ou na bandeja." />
+                            </StackPanel>
+
+                            <Border Classes="rule" IsVisible="{Binding HasWirelessFans}" />
+
+                            <StackPanel Spacing="10" IsVisible="{Binding HasWirelessFans}">
+                                <TextBlock Text="Ventoinhas sem fio" Classes="heading" />
+                                <TextBlock Classes="muted"
+                                           Text="Este PC tem um controlador sem fio da Lian Li. As ventoinhas ligadas nele são comandadas pelo L-Connect e não aparecem aqui, a menos que o L-Connect esteja configurado para seguir o sinal da placa-mãe." />
+                            </StackPanel>
                         </StackPanel>
                     </ScrollViewer>
                 </Grid>

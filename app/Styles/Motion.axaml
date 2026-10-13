@@ -1,6 +1,6 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:c="using:Mach1DriverCustom.Controls">
+        xmlns:c="using:Mach1CustomApp.Controls">
 
     <!-- Movimento da interface. Este arquivo só é carregado quando o Windows está com as
          animações ligadas (Configurações > Acessibilidade > Efeitos visuais); ver App.axaml.cs.

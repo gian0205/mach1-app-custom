@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
-namespace Mach1DriverCustom.Controls;
+namespace Mach1CustomApp.Controls;
 
 /// <summary>Uma série de um gráfico: o teste que ela representa, a cor e os valores.</summary>
 /// <param name="Values">Um valor por categoria (núcleo) ou um só, conforme o gráfico.</param>

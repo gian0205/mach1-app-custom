@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace Mach1DriverCustom.Services;
+namespace Mach1CustomApp.Services;
 
 /// <summary>
 /// O computador onde o app está rodando, do jeito que o resto do código precisa enxergar: qual

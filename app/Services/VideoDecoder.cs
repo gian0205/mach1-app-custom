@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
-namespace Mach1DriverCustom.Services;
+namespace Mach1CustomApp.Services;
 
 /// <summary>
 /// Decodifica um vídeo em laço, no ritmo dele, com um ffmpeg.exe em segundo plano que entrega
@@ -18,7 +18,8 @@ public sealed class VideoDecoder : IDisposable
 
     // Meia resolução da tela: sob os números e o escurecimento a diferença não aparece, e o
     // custo de decodificar e copiar cai para um quarto.
-    private const int Width = LcdDevice.Width / 2, Height = LcdDevice.Height / 2;
+    private static int Width => LcdScreen.Width / 2;
+    private static int Height => LcdScreen.Height / 2;
     private static readonly TimeSpan FirstFrameTimeout = TimeSpan.FromSeconds(8);
 
     private static readonly string[] Extensions = [".mp4", ".m4v", ".mov", ".mkv", ".webm", ".avi"];

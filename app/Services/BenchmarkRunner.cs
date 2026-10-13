@@ -1,4 +1,4 @@
-using Mach1DriverCustom.Models;
+using Mach1CustomApp.Models;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -7,7 +7,7 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace Mach1DriverCustom.Services;
+namespace Mach1CustomApp.Services;
 
 /// <param name="Seconds">Duração da etapa de 1 núcleo e da de todos os núcleos.</param>
 /// <param name="PerCore">Testar também cada núcleo sozinho.</param>

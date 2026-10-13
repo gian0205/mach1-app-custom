@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Mach1DriverCustom.Models;
+namespace Mach1CustomApp.Models;
 
 public enum LcdElementKind
 {

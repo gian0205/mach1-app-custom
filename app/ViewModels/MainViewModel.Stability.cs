@@ -1,12 +1,12 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Mach1DriverCustom.Services;
+using Mach1CustomApp.Services;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Mach1DriverCustom.ViewModels;
+namespace Mach1CustomApp.ViewModels;
 
 // Teste de estabilidade da curva em vigor, um núcleo por vez.
 public partial class MainViewModel

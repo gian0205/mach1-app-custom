@@ -1,8 +1,8 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:Mach1DriverCustom.ViewModels"
-        xmlns:c="using:Mach1DriverCustom.Controls"
-        x:Class="Mach1DriverCustom.Views.LayoutEditorWindow"
+        xmlns:vm="using:Mach1CustomApp.ViewModels"
+        xmlns:c="using:Mach1CustomApp.Controls"
+        x:Class="Mach1CustomApp.Views.LayoutEditorWindow"
         x:DataType="vm:MainViewModel"
         Icon="/Assets/avalonia-logo.ico"
         Width="900" Height="800" MinWidth="820" MinHeight="620"
@@ -19,7 +19,7 @@
         <!-- A tela, em metade do tamanho real -->
         <StackPanel Spacing="10">
             <Border Classes="panel" Padding="12">
-                <c:LayoutCanvas Width="360" Height="640"
+                <c:LayoutCanvas Width="{Binding EditorWidth}" Height="{Binding EditorHeight}"
                                 Source="{Binding LcdPreview}"
                                 Elements="{Binding LayoutElements}"
                                 Selected="{Binding SelectedElement}"
@@ -94,7 +94,7 @@
                         <TextBlock Grid.Row="1" Grid.Column="2" Text="Altura" VerticalAlignment="Center" />
                         <NumericUpDown Grid.Row="1" Grid.Column="3" Value="{Binding SelectedElement.Height}" FormatString="0" Minimum="8" Maximum="2000" />
                     </Grid>
-                    <TextBlock Classes="muted" Text="Medidas em pixels da tela, que tem 720 de largura por 1280 de altura. Em texto e sensor, a altura define o tamanho da letra." />
+                    <TextBlock Classes="muted" Text="Medidas em pixels da tela. Em texto e sensor, a altura define o tamanho da letra." />
 
                     <StackPanel Spacing="6" IsVisible="{Binding SelectedElement.HasAlign, FallbackValue=False}">
                         <TextBlock Text="Alinhamento dentro da caixa" />

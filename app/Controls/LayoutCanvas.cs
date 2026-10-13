@@ -3,13 +3,13 @@ using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Media;
-using Mach1DriverCustom.Services;
-using Mach1DriverCustom.ViewModels;
+using Mach1CustomApp.Services;
+using Mach1CustomApp.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Mach1DriverCustom.Controls;
+namespace Mach1CustomApp.Controls;
 
 /// <summary>
 /// A tela do water cooler em escala reduzida, para o editor de layout: mostra o quadro desenhado
@@ -55,7 +55,7 @@ public class LayoutCanvas : Control
     public bool Flipped { get => GetValue(FlippedProperty); set => SetValue(FlippedProperty, value); }
 
     // Pixels da tela por pixel do controle.
-    private double Scale => LcdDevice.Width / Math.Max(1, Bounds.Width);
+    private double Scale => LcdScreen.Width / Math.Max(1, Bounds.Width);
 
     private Rect BoxOf(LayoutElementViewModel element) => new(
         (double)(element.X ?? 0) / Scale, (double)(element.Y ?? 0) / Scale,
@@ -135,8 +135,8 @@ public class LayoutCanvas : Control
         if (_drag == Drag.Move)
         {
             // Pode sair um pouco da tela, mas não a ponto de sumir.
-            element.X = (decimal)Math.Round(Math.Clamp(_dragOrigin.X + delta.X, 16 - _dragOrigin.Width, LcdDevice.Width - 16));
-            element.Y = (decimal)Math.Round(Math.Clamp(_dragOrigin.Y + delta.Y, 16 - _dragOrigin.Height, LcdDevice.Height - 16));
+            element.X = (decimal)Math.Round(Math.Clamp(_dragOrigin.X + delta.X, 16 - _dragOrigin.Width, LcdScreen.Width - 16));
+            element.Y = (decimal)Math.Round(Math.Clamp(_dragOrigin.Y + delta.Y, 16 - _dragOrigin.Height, LcdScreen.Height - 16));
         }
         else
         {

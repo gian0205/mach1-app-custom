@@ -1,4 +1,4 @@
-# MACH1 Driver Custom
+# MACH1 custom app
 
 App .NET 10 + Avalonia que ajusta o processador Ryzen de dentro do Windows e controla a tela LCD do water cooler MACH1.
 
@@ -15,6 +15,13 @@ App .NET 10 + Avalonia que ajusta o processador Ryzen de dentro do Windows e con
 - Pontuação com 1 núcleo, com todos, de cada núcleo sozinho e cópia de memória, lendo temperatura, clock efetivo e potência durante o teste
 - Histórico em disco e comparação de até três testes em gráficos, com exportação em PNG
 - A pontuação é uma escala própria (cerca de 1000 para um núcleo do 9800X3D); serve para comparar o mesmo PC antes e depois de um ajuste
+
+**Ventoinhas e bomba**
+
+- Rotação e velocidade de cada conector da placa-mãe; por conector, automático da BIOS, velocidade fixa ou curva por temperatura (do processador ou da placa de vídeo), desenhada arrastando pontos
+- Mínimos de segurança (20 % ventoinha, 60 % bomba) e retorno ao automático se o processador chegar perto do limite ou ao fechar o app
+- Se o app for encerrado à força com um conector sob o controle dele, o conector fica na última velocidade até o PC reiniciar; na abertura seguinte o app avisa e o mantém pela curva. Use o Sair da bandeja ou `--quit`
+- Só alcança o que está ligado na placa-mãe; ventoinhas com controlador próprio (as sem fio da Lian Li, por exemplo) ficam de fora
 
 **Tela do water cooler** (USB `1600:3005`, 720x1280)
 
@@ -50,11 +57,11 @@ winget install namazso.PawnIO
 - **Temperatura do processador**: exige o driver PawnIO. Em Ryzen suportado vem do SMU; nos demais (Intel, por exemplo), da LibreHardwareMonitor.
 - **Placa de vídeo**: NVIDIA pela NVML; AMD e Intel pela LibreHardwareMonitor.
 - A faixa de margem (-40 em Zen 4/5, -30 antes), o limite de temperatura e os limites de PBO iniciais vêm do próprio processador.
-- A tela precisa ser a de identificador USB `1600:3005` (720x1280); outros modelos ainda não são reconhecidos.
+- **Tela**: testada só com a IRV360 (USB `1600:3005`, 720x1280). As outras telas da linha (IEV360, IMV360, AV360) são procuradas pelo fabricante no USB e usam a resolução informada na aba da tela; as páginas se rearranjam para tela deitada ou quadrada (ver `formatos.png`). Nada disso foi testado com essas telas.
 
 ### Levar para outro PC
 
-Rode `publicar.cmd`. Ele gera a pasta `dist`, com o app e o .NET juntos (cerca de 215 MB). Copie a pasta inteira, instale o PawnIO na outra máquina e abra `Mach1DriverCustom.exe` como administrador. O perfil e o histórico não vão junto: ficam em `%AppData%` de cada máquina.
+Rode `publicar.cmd`. Ele gera a pasta `dist`, com o app e o .NET juntos (cerca de 215 MB). Copie a pasta inteira, instale o PawnIO na outra máquina e abra `Mach1CustomApp.exe` como administrador. O perfil e o histórico não vão junto: ficam em `%AppData%` de cada máquina.
 
 ## Compilar e rodar
 
@@ -69,8 +76,12 @@ Argumentos:
 - `--edit-layout` abre direto o editor de layout da tela
 - A variável de ambiente `MACH1_GENERIC=1` simula um PC sem Ryzen suportado e sem NVIDIA, para testar esse caminho
 - `--tray` abre só na bandeja (é como a tarefa agendada chama o app)
-- `--tab N` abre direto na aba N (0 a 3)
+- `--tab N` abre direto na aba N (0 a 4)
+- `--quit` encerra a cópia aberta do jeito normal (devolve as ventoinhas à placa-mãe)
+- `--fans <arquivo>` lista os conectores de ventoinha, sem alterar nada
+- `--fan-test <conector> <porcentagem> <arquivo>` fixa um conector por 8 s, anota a rotação e devolve ao automático
 - `--bench <segundos> <arquivo.json>` roda o benchmark sem janela e grava o resultado
+- `--lcd-size <largura> <altura>` faz a prévia abaixo em outra resolução
 - `--lcd-preview <pasta> [imagem]` grava as páginas do painel em arquivos, com valores de exemplo, sem tocar em hardware
 
 ## Estrutura
@@ -78,6 +89,7 @@ Argumentos:
 - `app/` — o aplicativo (Avalonia, MVVM)
   - `Services/Machine.cs` — o que há neste PC e de onde vem cada sensor
   - `Services/CpuTuner.cs` — comandos do SMU (só Ryzen suportado)
+  - `Services/FanControl.cs` — ventoinhas e bomba pela LibreHardwareMonitor
   - `Services/GenericSensors.cs` — sensores pela LibreHardwareMonitor
   - `Services/LcdDevice.cs` — protocolo da tela (documentado no topo do arquivo)
   - `Services/LcdRenderer.cs` e `LcdService.cs` — desenho do painel e envio
@@ -89,7 +101,7 @@ Argumentos:
   - `ViewModels/MainViewModel*.cs` — uma parte por área (processador, tela, teste, jogos, inicialização)
 - `ext/zsc/` — cópia do código da [ZenStates-Core](https://github.com/irusanov/ZenStates-Core) (GPL-3.0)
 
-As opções e o perfil ficam em `%AppData%\Mach1DriverCustom\profile.json`.
+As opções e o perfil ficam em `%AppData%\Mach1CustomApp\profile.json`.
 
 ## Licença
 

@@ -1,15 +1,18 @@
 using Avalonia;
-using Mach1DriverCustom.Services;
+using Mach1CustomApp.Services;
 using System;
 using System.IO;
 using System.Threading;
 
-namespace Mach1DriverCustom;
+namespace Mach1CustomApp;
 
 sealed class Program
 {
     /// <summary>Sinal que uma segunda cópia do app dispara para a primeira mostrar a janela.</summary>
-    public const string ShowSignalName = "Mach1DriverCustom.Show";
+    public const string ShowSignalName = "Mach1CustomApp.Show";
+
+    /// <summary>Sinal que pede para a cópia em execução encerrar do jeito normal, devolvendo as ventoinhas.</summary>
+    public const string QuitSignalName = "Mach1CustomApp.Quit";
 
     // Initialization code. Don't use any Avalonia, third-party APIs or any
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
@@ -17,11 +20,52 @@ sealed class Program
     [STAThread]
     public static int Main(string[] args)
     {
+        // --lcd-size <largura> <altura> faz a prévia abaixo em outra resolução de tela.
+        int size = Array.IndexOf(args, "--lcd-size");
+        if (size >= 0 && size + 2 < args.Length && int.TryParse(args[size + 1], out int w) && int.TryParse(args[size + 2], out int h))
+            LcdScreen.Configure(w, h);
+
         // Grava em arquivos as duas páginas do painel com valores de exemplo, sem tocar em
         // hardware: --lcd-preview <pasta> [imagem de fundo]
         int preview = Array.IndexOf(args, "--lcd-preview");
         if (preview >= 0 && preview + 1 < args.Length)
-            return WritePreview(args[preview + 1], preview + 2 < args.Length ? args[preview + 2] : null);
+            return WritePreview(args[preview + 1], preview + 2 < args.Length && !args[preview + 2].StartsWith("--") ? args[preview + 2] : null);
+
+        // --fans <arquivo> lista os conectores de ventoinha que a placa-mãe expõe, sem alterar nada.
+        int fans = Array.IndexOf(args, "--fans");
+        if (fans >= 0 && fans + 1 < args.Length)
+        {
+            var control = new FanControl();
+            var lines = new System.Collections.Generic.List<string> { "Chip: " + (control.ChipName.Length > 0 ? control.ChipName : "(nenhum reconhecido)") };
+            foreach (FanChannel channel in control.Channels)
+                lines.Add($"{channel.Id} | {channel.Name} | {channel.Rpm:0} RPM | {channel.Percent:0.0} %");
+            File.WriteAllLines(args[fans + 1], lines);
+            // Sai sem o Dispose de propósito: listar não deve mexer no modo de controle de nenhum conector.
+            return 0;
+        }
+
+        // --fan-test <conector> <porcentagem> <arquivo>: fixa um conector por alguns segundos, anota a
+        // rotação antes e depois, e devolve ao automático. Serve para conferir se a placa obedece.
+        int fanTest = Array.IndexOf(args, "--fan-test");
+        if (fanTest >= 0 && fanTest + 3 < args.Length && int.TryParse(args[fanTest + 1], out int index) && float.TryParse(args[fanTest + 2], out float percent))
+        {
+            using var control = new FanControl();
+            FanChannel channel = control.Channels[index];
+            var lines = new System.Collections.Generic.List<string> { $"antes: {channel.Rpm:0} RPM, {channel.Percent:0} %" };
+            channel.SetPercent(percent);
+            for (int i = 1; i <= 4; i++)
+            {
+                Thread.Sleep(2000);
+                control.Update();
+                lines.Add($"fixo em {percent:0} %, {i * 2} s: {channel.Rpm:0} RPM, {channel.Percent:0} %");
+            }
+            channel.SetAutomatic();
+            Thread.Sleep(4000);
+            control.Update();
+            lines.Add($"de volta ao automático: {channel.Rpm:0} RPM, {channel.Percent:0} %");
+            File.WriteAllLines(args[fanTest + 3], lines);
+            return 0;
+        }
 
         // Roda o benchmark sem janela e grava o resultado em JSON: --bench <segundos> <arquivo>
         int bench = Array.IndexOf(args, "--bench");
@@ -34,9 +78,20 @@ sealed class Program
             return 0;
         }
 
+        // --quit encerra a cópia que estiver aberta, como se fosse o Sair da bandeja.
+        if (Array.IndexOf(args, "--quit") >= 0)
+        {
+            if (EventWaitHandle.TryOpenExisting(QuitSignalName, out EventWaitHandle? quit))
+            {
+                quit.Set();
+                quit.Dispose();
+            }
+            return 0;
+        }
+
         // Só uma cópia pode falar com o processador e com a tela. A segunda pede para a primeira
         // abrir a janela e sai.
-        using var instance = new Mutex(true, "Mach1DriverCustom.Instance", out bool first);
+        using var instance = new Mutex(true, "Mach1CustomApp.Instance", out bool first);
         if (!first)
         {
             if (EventWaitHandle.TryOpenExisting(ShowSignalName, out EventWaitHandle? signal))
@@ -50,6 +105,16 @@ sealed class Program
         // Se o app cair, o motivo fica gravado ao lado do perfil.
         AppDomain.CurrentDomain.UnhandledException += (_, e) =>
         {
+            // Antes de tudo, devolve ventoinhas e bomba à placa-mãe: o app está caindo.
+            try
+            {
+                FanControl.Current?.Dispose();
+            }
+            catch (Exception)
+            {
+                // Já estamos em queda; segue para registrar o motivo.
+            }
+
             try
             {
                 Directory.CreateDirectory(ProfileStore.Directory);

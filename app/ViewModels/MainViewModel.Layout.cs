@@ -1,12 +1,13 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Mach1DriverCustom.Models;
-using Mach1DriverCustom.Services;
+using Mach1CustomApp.Models;
+using Mach1CustomApp.Services;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace Mach1DriverCustom.ViewModels;
+namespace Mach1CustomApp.ViewModels;
 
 // Layout personalizado da tela e o estado do editor.
 public partial class MainViewModel
@@ -67,6 +68,19 @@ public partial class MainViewModel
         SaveSettings();
     }
 
+    /// <summary>Fator que leva as medidas pensadas para 720x1280 à tela em uso.</summary>
+    private static double ScreenScale => Math.Min(LcdScreen.Width / (double)LcdScreen.DefaultWidth, LcdScreen.Height / (double)LcdScreen.DefaultHeight);
+
+    private static LcdElement Scaled(LcdElement element)
+    {
+        double scale = ScreenScale;
+        element.X = Math.Round(element.X * scale);
+        element.Y = Math.Round(element.Y * scale);
+        element.Width = Math.Round(element.Width * scale);
+        element.Height = Math.Max(4, Math.Round(element.Height * scale));
+        return element;
+    }
+
     private void AddElement(LcdElement element)
     {
         var item = new LayoutElementViewModel(element, OnLayoutChanged);
@@ -77,19 +91,19 @@ public partial class MainViewModel
 
     [RelayCommand]
     private void AddTextElement() =>
-        AddElement(new LcdElement { Kind = LcdElementKind.Text, X = 56, Y = 600, Width = 400, Height = 48, Text = "Texto" });
+        AddElement(Scaled(new LcdElement { Kind = LcdElementKind.Text, X = 56, Y = 600, Width = 400, Height = 48, Text = "Texto" }));
 
     [RelayCommand]
     private void AddSensorElement() =>
-        AddElement(new LcdElement { Kind = LcdElementKind.Sensor, X = 56, Y = 600, Width = 400, Height = 96, Sensor = 0 });
+        AddElement(Scaled(new LcdElement { Kind = LcdElementKind.Sensor, X = 56, Y = 600, Width = 400, Height = 96, Sensor = 0 }));
 
     [RelayCommand]
     private void AddBarElement() =>
-        AddElement(new LcdElement { Kind = LcdElementKind.Bar, X = 56, Y = 600, Width = 608, Height = 14, Sensor = 2 });
+        AddElement(Scaled(new LcdElement { Kind = LcdElementKind.Bar, X = 56, Y = 600, Width = 608, Height = 14, Sensor = 2 }));
 
     /// <summary>Chamado pela janela do editor depois de o usuário escolher o arquivo.</summary>
     public void AddImageElement(string path) =>
-        AddElement(new LcdElement { Kind = LcdElementKind.Image, X = 210, Y = 490, Width = 300, Height = 300, Path = path });
+        AddElement(Scaled(new LcdElement { Kind = LcdElementKind.Image, X = 210, Y = 490, Width = 300, Height = 300, Path = path }));
 
     [RelayCommand]
     private void RemoveElement()
@@ -99,7 +113,7 @@ public partial class MainViewModel
 
         int index = LayoutElements.IndexOf(element);
         LayoutElements.Remove(element);
-        SelectedElement = LayoutElements.Count > 0 ? LayoutElements[System.Math.Min(index, LayoutElements.Count - 1)] : null;
+        SelectedElement = LayoutElements.Count > 0 ? LayoutElements[Math.Min(index, LayoutElements.Count - 1)] : null;
         OnLayoutChanged();
     }
 
@@ -158,7 +172,7 @@ public partial class MainViewModel
         _loadingLayout = true;
         LayoutElements.Clear();
         foreach (LcdElement element in template)
-            LayoutElements.Add(new LayoutElementViewModel(element, OnLayoutChanged));
+            LayoutElements.Add(new LayoutElementViewModel(Scaled(element), OnLayoutChanged));
         _loadingLayout = false;
 
         SelectedElement = null;

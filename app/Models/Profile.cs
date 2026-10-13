@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Mach1DriverCustom.Models;
+namespace Mach1CustomApp.Models;
 
 /// <summary>
 /// Tudo o que o app guarda em disco. A curva e os limites só mudam quando o usuário salva o
@@ -63,6 +63,11 @@ public sealed class Profile
     /// <summary>Opacidade da cor de fundo sobre a imagem ou o vídeo, de 0 (só a imagem) a 100 (só a cor).</summary>
     public int LcdImageDim { get; set; } = 55;
 
+    /// <summary>Resolução da tela, em pixels; 0 usa a da IRV360 (720x1280).</summary>
+    public int LcdWidth { get; set; }
+
+    public int LcdHeight { get; set; }
+
     // Alerta de temperatura
 
     public bool AlertEnabled { get; set; }
@@ -88,6 +93,10 @@ public sealed class Profile
 
     public string? TempHotColor { get; set; }
 
+    // Ventoinhas e bomba
+
+    public List<FanSetting> Fans { get; set; } = [];
+
     // Perfis por jogo
 
     public List<GameProfile> Games { get; set; } = [];
@@ -102,4 +111,40 @@ public sealed class GameProfile
     public int Margin { get; set; }
 
     public string Summary => $"{Executable}: margem {Margin:+0;-0;0}";
+}
+
+/// <summary>O que o usuário escolheu para um conector de ventoinha da placa-mãe.</summary>
+public sealed class FanSetting
+{
+    /// <summary>Identificador do conector no chip de monitoramento.</summary>
+    public string Id { get; set; } = "";
+
+    /// <summary>Nome dado pelo usuário, como "Radiador" ou "Bomba".</summary>
+    public string Label { get; set; } = "";
+
+    public bool IsPump { get; set; }
+
+    /// <summary>Só em perfis antigos: velocidade fixa. Hoje vale <see cref="Mode"/>.</summary>
+    public bool Manual { get; set; }
+
+    /// <summary>0 = automático da placa-mãe, 1 = velocidade fixa, 2 = curva por temperatura.</summary>
+    public int Mode { get; set; }
+
+    /// <summary>Velocidade fixa, em %.</summary>
+    public double Percent { get; set; }
+
+    /// <summary>Temperatura que a curva segue: 0 = processador, 1 = placa de vídeo.</summary>
+    public int Source { get; set; }
+
+    public List<FanCurvePoint> Curve { get; set; } = [];
+}
+
+/// <summary>Um ponto da curva de ventoinha.</summary>
+public sealed class FanCurvePoint
+{
+    /// <summary>Temperatura, em °C.</summary>
+    public double Temperature { get; set; }
+
+    /// <summary>Velocidade, em %.</summary>
+    public double Percent { get; set; }
 }

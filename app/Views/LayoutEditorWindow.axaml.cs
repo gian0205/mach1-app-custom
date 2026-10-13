@@ -3,11 +3,11 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
-using Mach1DriverCustom.ViewModels;
+using Mach1CustomApp.ViewModels;
 using System;
 using System.Collections.Generic;
 
-namespace Mach1DriverCustom.Views;
+namespace Mach1CustomApp.Views;
 
 /// <summary>Editor do layout personalizado da tela do water cooler.</summary>
 public partial class LayoutEditorWindow : Window

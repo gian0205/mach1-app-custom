@@ -4,15 +4,15 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Threading;
-using Mach1DriverCustom.Services;
-using Mach1DriverCustom.ViewModels;
-using Mach1DriverCustom.Views;
+using Mach1CustomApp.Services;
+using Mach1CustomApp.ViewModels;
+using Mach1CustomApp.Views;
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace Mach1DriverCustom;
+namespace Mach1CustomApp;
 
 public partial class App : Application
 {
@@ -30,7 +30,7 @@ public partial class App : Application
         // MACH1_NO_MOTION=1 desliga as animações mesmo com o Windows permitindo.
         Controls.Motion.Enabled = AnimationsEnabled() && Environment.GetEnvironmentVariable("MACH1_NO_MOTION") is null;
         if (Controls.Motion.Enabled)
-            Styles.Add(new StyleInclude(new Uri("avares://Mach1DriverCustom/")) { Source = new Uri("/Styles/Motion.axaml", UriKind.Relative) });
+            Styles.Add(new StyleInclude(new Uri("avares://Mach1CustomApp/")) { Source = new Uri("/Styles/Motion.axaml", UriKind.Relative) });
     }
 
     /// <summary>A opção "Efeitos de animação" do Windows (Acessibilidade > Efeitos visuais).</summary>
@@ -71,6 +71,7 @@ public partial class App : Application
                 _window?.OpenLayoutEditor();
 
             ListenForShowSignal();
+            ListenForQuitSignal();
         }
 
         base.OnFrameworkInitializationCompleted();
@@ -119,6 +120,19 @@ public partial class App : Application
                 Dispatcher.UIThread.Post(ShowWindow);
         })
         { IsBackground = true, Name = "Sinal de abrir janela" };
+        thread.Start();
+    }
+
+    /// <summary>O argumento --quit, em outra cópia do app, pede para esta encerrar normalmente.</summary>
+    private void ListenForQuitSignal()
+    {
+        var signal = new EventWaitHandle(false, EventResetMode.AutoReset, Program.QuitSignalName);
+        var thread = new Thread(() =>
+        {
+            signal.WaitOne();
+            Dispatcher.UIThread.Post(Exit);
+        })
+        { IsBackground = true, Name = "Sinal de encerrar" };
         thread.Start();
     }
 

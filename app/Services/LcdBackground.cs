@@ -2,7 +2,7 @@ using SkiaSharp;
 using System;
 using System.Collections.Generic;
 
-namespace Mach1DriverCustom.Services;
+namespace Mach1CustomApp.Services;
 
 /// <summary>
 /// Fundo do painel: imagem estática, GIF ou vídeo. Imagens e GIFs ficam decodificados na
@@ -49,7 +49,7 @@ public sealed class LcdBackground : IDisposable
         if (count == 1)
         {
             Decode(codec, info, decoded, 0);
-            return new LcdBackground([Scale(decoded, LcdDevice.Width, LcdDevice.Height)], [1]);
+            return new LcdBackground([Scale(decoded, LcdScreen.Width, LcdScreen.Height)], [1]);
         }
 
         // GIF longo: guarda um quadro a cada "step" e soma as durações dos que ficaram de fora.
@@ -64,7 +64,7 @@ public sealed class LcdBackground : IDisposable
             if (i % step == 0)
             {
                 Decode(codec, info, decoded, i);
-                frames.Add(Scale(decoded, LcdDevice.Width / 2, LcdDevice.Height / 2));
+                frames.Add(Scale(decoded, LcdScreen.Width / 2, LcdScreen.Height / 2));
                 ends.Add(0);
             }
 

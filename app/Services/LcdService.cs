@@ -1,12 +1,12 @@
 using System;
-using Mach1DriverCustom.Models;
+using Mach1CustomApp.Models;
 using SkiaSharp;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 
-namespace Mach1DriverCustom.Services;
+namespace Mach1CustomApp.Services;
 
 /// <summary>Opções do painel que o laço de desenho consulta a cada quadro.</summary>
 /// <param name="PageMode">0 = temperaturas, 1 = Curve Optimizer, 2 = alterna as duas, 3 = layout personalizado.</param>

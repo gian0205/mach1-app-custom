@@ -2,7 +2,7 @@ using System;
 using System.Globalization;
 using System.Linq;
 
-namespace Mach1DriverCustom.Services;
+namespace Mach1CustomApp.Services;
 
 /// <summary>Os sensores que um elemento do layout personalizado pode mostrar, pelo índice.</summary>
 public static class LcdSensors

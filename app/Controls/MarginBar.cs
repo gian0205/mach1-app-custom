@@ -3,7 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using System;
 
-namespace Mach1DriverCustom.Controls;
+namespace Mach1CustomApp.Controls;
 
 /// <summary>
 /// Barra divergente da margem de um núcleo: parte do zero para a esquerda (negativa) ou para a

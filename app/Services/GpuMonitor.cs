@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Mach1DriverCustom.Services;
+namespace Mach1CustomApp.Services;
 
 /// <summary>Leitura da placa de vídeo; cada campo é null quando o driver não informa.</summary>
 public readonly record struct GpuReading(float? Temperature, float? Load, float? MemoryUsedGb, float? MemoryTotalGb, float? Watts);

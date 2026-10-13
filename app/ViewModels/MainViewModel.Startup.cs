@@ -1,11 +1,11 @@
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Mach1DriverCustom.Models;
-using Mach1DriverCustom.Services;
+using Mach1CustomApp.Models;
+using Mach1CustomApp.Services;
 using System;
 using System.Threading.Tasks;
 
-namespace Mach1DriverCustom.ViewModels;
+namespace Mach1CustomApp.ViewModels;
 
 // Bandeja e inicialização junto com o Windows.
 public partial class MainViewModel

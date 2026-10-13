@@ -1,6 +1,6 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="Mach1DriverCustom.App"
+             x:Class="Mach1CustomApp.App"
              RequestedThemeVariant="Dark">
 
     <Application.Resources>
@@ -36,7 +36,7 @@
 
     <TrayIcon.Icons>
         <TrayIcons>
-            <TrayIcon Icon="/Assets/avalonia-logo.ico" ToolTipText="MACH1 Driver Custom" Clicked="OnTrayClicked">
+            <TrayIcon Icon="/Assets/avalonia-logo.ico" ToolTipText="MACH1 custom app" Clicked="OnTrayClicked">
                 <TrayIcon.Menu>
                     <NativeMenu>
                         <NativeMenuItem Header="Abrir" Click="OnTrayOpen" />

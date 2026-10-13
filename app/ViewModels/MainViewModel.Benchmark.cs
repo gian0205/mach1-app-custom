@@ -1,9 +1,9 @@
 using Avalonia;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Mach1DriverCustom.Controls;
-using Mach1DriverCustom.Models;
-using Mach1DriverCustom.Services;
+using Mach1CustomApp.Controls;
+using Mach1CustomApp.Models;
+using Mach1CustomApp.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -12,7 +12,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Mach1DriverCustom.ViewModels;
+namespace Mach1CustomApp.ViewModels;
 
 // Benchmark: rodar, guardar o histórico e montar a comparação entre até três testes.
 public partial class MainViewModel

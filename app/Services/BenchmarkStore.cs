@@ -1,11 +1,11 @@
-using Mach1DriverCustom.Models;
+using Mach1CustomApp.Models;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 
-namespace Mach1DriverCustom.Services;
+namespace Mach1CustomApp.Services;
 
-/// <summary>Histórico de benchmarks, em %AppData%\Mach1DriverCustom\benchmarks.json.</summary>
+/// <summary>Histórico de benchmarks, em %AppData%\Mach1CustomApp\benchmarks.json.</summary>
 public static class BenchmarkStore
 {
     private static string FilePath => Path.Combine(ProfileStore.Directory, "benchmarks.json");

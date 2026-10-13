@@ -2,7 +2,7 @@ using LibreHardwareMonitor.Hardware;
 using System;
 using System.Linq;
 
-namespace Mach1DriverCustom.Services;
+namespace Mach1CustomApp.Services;
 
 /// <summary>
 /// Sensores pela LibreHardwareMonitor, para o que o caminho principal não cobre: temperatura de

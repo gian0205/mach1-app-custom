@@ -10,7 +10,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Mach1DriverCustom.Controls;
+namespace Mach1CustomApp.Controls;
 
 /// <summary>
 /// Movimento que não cabe em estilos: entrada em sequência dos itens de uma lista e um pulso

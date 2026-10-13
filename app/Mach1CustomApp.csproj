@@ -6,6 +6,9 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <Version>1.0.0</Version>
+    <Product>MACH1 custom app</Product>
+    <AssemblyTitle>MACH1 custom app</AssemblyTitle>
   </PropertyGroup>
 
   <ItemGroup>

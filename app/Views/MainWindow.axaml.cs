@@ -3,10 +3,10 @@ using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
-using Mach1DriverCustom.ViewModels;
+using Mach1CustomApp.ViewModels;
 using System.Collections.Generic;
 
-namespace Mach1DriverCustom.Views;
+namespace Mach1CustomApp.Views;
 
 public partial class MainWindow : Window
 {

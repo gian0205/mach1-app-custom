@@ -3,8 +3,8 @@ using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Mach1DriverCustom.Models;
-using Mach1DriverCustom.Services;
+using Mach1CustomApp.Models;
+using Mach1CustomApp.Services;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,7 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Mach1DriverCustom.ViewModels;
+namespace Mach1CustomApp.ViewModels;
 
 // Tela do water cooler: opções, pré-visualização e alerta de temperatura.
 public partial class MainViewModel
@@ -80,6 +80,59 @@ public partial class MainViewModel
 
     [ObservableProperty]
     private decimal? _alertGpu = 83;
+
+    // Modelo e resolução da tela.
+
+    /// <summary>Qual tela foi encontrada no USB, em texto.</summary>
+    [ObservableProperty]
+    private string _lcdScreenText = "";
+
+    /// <summary>Resolução gravada no perfil; passa a valer na próxima abertura do app.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(LcdResolutionNote))]
+    private decimal? _lcdWidthSetting = LcdScreen.Width;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(LcdResolutionNote))]
+    private decimal? _lcdHeightSetting = LcdScreen.Height;
+
+    public string LcdResolutionNote =>
+        (int)(LcdWidthSetting ?? 0) == LcdScreen.Width && (int)(LcdHeightSetting ?? 0) == LcdScreen.Height
+            ? $"Em uso: {LcdScreen.Width} x {LcdScreen.Height}."
+            : $"Em uso: {LcdScreen.Width} x {LcdScreen.Height}. Feche e abra o app para a nova resolução valer.";
+
+    // Tamanho da prévia na aba da tela e da área do editor, na proporção da tela.
+    public double PreviewWidth => FitScreen(288, 512).Width;
+    public double PreviewHeight => FitScreen(288, 512).Height;
+    public double EditorWidth => FitScreen(480, 640).Width;
+    public double EditorHeight => FitScreen(480, 640).Height;
+
+    private static (double Width, double Height) FitScreen(double maxWidth, double maxHeight)
+    {
+        double scale = Math.Min(maxWidth / LcdScreen.Width, maxHeight / LcdScreen.Height);
+        return (Math.Round(LcdScreen.Width * scale), Math.Round(LcdScreen.Height * scale));
+    }
+
+    /// <summary>Procura a tela no USB e descreve o que achou.</summary>
+    private void DetectLcdScreen()
+    {
+        LcdScreenInfo? screen = LcdScreen.Find()?.Info;
+        LcdAvailable = screen is not null;
+        LcdScreenText = screen switch
+        {
+            null => "Nenhuma tela encontrada no USB.",
+            { Tested: true } => $"Tela encontrada: IRV360 (USB {screen.Id}).",
+            _ => $"Tela encontrada: {(screen.Name.Length > 0 ? screen.Name : "modelo sem nome")} (USB {screen.Id}). " +
+                 "Este modelo ainda não foi testado com o app: informe a resolução dele abaixo.",
+        };
+    }
+
+    [RelayCommand]
+    private void ResetLcdResolution()
+    {
+        LcdWidthSetting = LcdScreen.DefaultWidth;
+        LcdHeightSetting = LcdScreen.DefaultHeight;
+    }
 
     // Cores da temperatura conforme ela sobe.
 
@@ -157,6 +210,8 @@ public partial class MainViewModel
         profile.AlertEnabled = AlertEnabled;
         profile.AlertCpu = (int)(AlertCpu ?? 85);
         profile.AlertGpu = (int)(AlertGpu ?? 83);
+        profile.LcdWidth = (int)(LcdWidthSetting ?? 0);
+        profile.LcdHeight = (int)(LcdHeightSetting ?? 0);
         profile.TempColorsEnabled = TempColorsEnabled;
         profile.CpuWarmAt = (int)(CpuWarmAt ?? 0);
         profile.CpuHotAt = (int)(CpuHotAt ?? 0);
@@ -333,7 +388,7 @@ public partial class MainViewModel
 
             int brightness = (int)LcdBrightness;
             await Task.Run(() => _lcd.OpenDevice(brightness));
-            LcdAvailable = true;
+            DetectLcdScreen();
             _lcdFailure = null;
             AddLog("Painel ligado na tela do water cooler.");
         }

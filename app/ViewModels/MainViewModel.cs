@@ -1,8 +1,8 @@
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Mach1DriverCustom.Models;
-using Mach1DriverCustom.Services;
+using Mach1CustomApp.Models;
+using Mach1CustomApp.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -12,7 +12,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Mach1DriverCustom.ViewModels;
+namespace Mach1CustomApp.ViewModels;
 
 /// <summary>
 /// Estado da janela. Este arquivo cuida do processador (curva, limites, monitor); as outras
@@ -33,10 +33,11 @@ public partial class MainViewModel : ViewModelBase, IDisposable
         nameof(AlertEnabled), nameof(AlertCpu), nameof(AlertGpu),
         nameof(TempColorsEnabled), nameof(CpuWarmAt), nameof(CpuHotAt), nameof(GpuWarmAt), nameof(GpuHotAt),
         nameof(TempWarnColor), nameof(TempHotColor),
+        nameof(LcdWidthSetting), nameof(LcdHeightSetting),
     ];
 
     private readonly bool _startedAtLogon;
-    private readonly LcdService _lcd = new();
+    private readonly LcdService _lcd;
     private Machine? _machine;
     private DispatcherTimer? _monitor;
     private bool _monitorBusy;
@@ -53,6 +54,19 @@ public partial class MainViewModel : ViewModelBase, IDisposable
     public MainViewModel(bool startedAtLogon)
     {
         _startedAtLogon = startedAtLogon;
+
+        // A resolução da tela precisa estar definida antes de o desenho do painel ser criado.
+        try
+        {
+            Profile? saved = ProfileStore.Load();
+            LcdScreen.Configure(saved?.LcdWidth ?? 0, saved?.LcdHeight ?? 0);
+        }
+        catch (Exception)
+        {
+            // Perfil ilegível: fica a resolução padrão; o aviso sai quando o perfil for carregado.
+        }
+
+        _lcd = new LcdService();
         _lcd.DeviceFailed += OnLcdDeviceFailed;
     }
 
@@ -184,10 +198,11 @@ public partial class MainViewModel : ViewModelBase, IDisposable
         LoadStored();
         StartWithWindows = StartupTask.IsEnabled();
         StartupBlocked = StartupGuard.IsBlocked;
-        LcdAvailable = LcdDevice.IsPresent;
+        DetectLcdScreen();
         _loading = false;
 
         ReportInterruptedTest();
+        await StartFansAsync();
         LoadBenchmarks();
 
         await RefreshAsync();
@@ -255,6 +270,8 @@ public partial class MainViewModel : ViewModelBase, IDisposable
         StoreLcdSettings(_stored);
         _stored.Layout = BuildLayout();
         _stored.Games = [.. Games];
+        if (_fans is not null)
+            _stored.Fans = Fans.Select(f => f.ToSetting()).ToList();
 
         try
         {
@@ -401,6 +418,7 @@ public partial class MainViewModel : ViewModelBase, IDisposable
                 Cores[i].Clock = clocks[i] > 0 ? $"{clocks[i]:0} MHz" : "—";
 
             UpdateLcd(machine, sensors, clocks);
+            await UpdateFansAsync(machine, sensors);
 
             if (++_tick % 3 == 0)
                 await CheckGamesAsync();
@@ -430,6 +448,7 @@ public partial class MainViewModel : ViewModelBase, IDisposable
         // Fechar normalmente não é queda: libera a aplicação automática do próximo logon.
         StartupGuard.Confirm();
         _lcd.Dispose();
+        ReleaseFans();
         _machine?.Dispose();
     }
 }

@@ -1,10 +1,10 @@
-using Mach1DriverCustom.Models;
+using Mach1CustomApp.Models;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using ZenStates.Core;
 
-namespace Mach1DriverCustom.Services;
+namespace Mach1CustomApp.Services;
 
 /// <summary>
 /// Fala com o SMU do processador pela ZenStates-Core. Todas as chamadas são serializadas,

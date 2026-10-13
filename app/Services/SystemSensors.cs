@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace Mach1DriverCustom.Services;
+namespace Mach1CustomApp.Services;
 
 /// <summary>Uma leitura de todos os sensores mostrados na janela e na tela.</summary>
 public sealed record SensorSnapshot(

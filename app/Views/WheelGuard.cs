@@ -4,7 +4,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 
-namespace Mach1DriverCustom.Views;
+namespace Mach1CustomApp.Views;
 
 /// <summary>
 /// A roda do mouse sobre um controle deslizante, uma caixa de número ou uma lista fechada
