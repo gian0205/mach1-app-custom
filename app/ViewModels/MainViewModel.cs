@@ -42,6 +42,8 @@ public partial class MainViewModel : ViewModelBase, IDisposable
     private DispatcherTimer? _monitor;
     private bool _monitorBusy;
     private bool _loading;
+    // Falso até o perfil ser lido do disco: antes disso, gravar apagaria o que o usuário salvou.
+    private bool _storedLoaded;
     private int _tick;
     // O que está gravado em disco.
     private Profile _stored = new();
@@ -221,6 +223,7 @@ public partial class MainViewModel : ViewModelBase, IDisposable
 
         _loading = true;
         LoadStored();
+        _storedLoaded = true;
         StartWithWindows = StartupTask.IsEnabled();
         StartupBlocked = StartupGuard.IsBlocked;
         DetectLcdScreen();
@@ -254,6 +257,15 @@ public partial class MainViewModel : ViewModelBase, IDisposable
         {
             AddLog("Perfil salvo ilegível, usando o padrão: " + ex.Message);
             _stored = new Profile();
+
+            // Guarda o arquivo ilegível: a próxima gravação o substituiria pelo padrão.
+            try
+            {
+                System.IO.File.Copy(ProfileStore.ProfilePath, ProfileStore.ProfilePath + ".ilegivel", overwrite: true);
+            }
+            catch (Exception)
+            {
+            }
         }
 
         for (int i = 0; i < Math.Min(Cores.Count, _stored.CoreMargins.Length); i++)
@@ -287,7 +299,7 @@ public partial class MainViewModel : ViewModelBase, IDisposable
     /// <summary>Grava as opções; a curva em disco fica como estava.</summary>
     private void SaveSettings()
     {
-        if (_loading)
+        if (_loading || !_storedLoaded)
             return;
 
         _stored.ApplyOnStart = ApplyOnStart;

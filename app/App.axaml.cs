@@ -67,14 +67,35 @@ public partial class App : Application
                 ShowWindow();
 
             // --edit-layout abre direto o editor de layout da tela.
+            // Espera a inicialização: o editor muda opções, e elas só valem depois de o perfil ser lido.
             if (!startInTray && args.Contains("--edit-layout"))
-                _window?.OpenLayoutEditor();
+                OpenLayoutEditorWhenReady(_viewModel);
 
             ListenForShowSignal();
             ListenForQuitSignal();
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private void OpenLayoutEditorWhenReady(MainViewModel viewModel)
+    {
+        if (viewModel.IsReady)
+        {
+            _window?.OpenLayoutEditor();
+            return;
+        }
+
+        void OnChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName != nameof(MainViewModel.IsReady) || !viewModel.IsReady)
+                return;
+
+            viewModel.PropertyChanged -= OnChanged;
+            _window?.OpenLayoutEditor();
+        }
+
+        viewModel.PropertyChanged += OnChanged;
     }
 
     private void ShowWindow()
