@@ -60,7 +60,7 @@ public partial class MainViewModel
     /// <summary>Vê se algum jogo da lista abriu ou fechou e troca a curva de acordo.</summary>
     private async Task CheckGamesAsync()
     {
-        if (!CanTune || (Games.Count == 0 && _activeGame is null))
+        if (!CanTuneCurve || (Games.Count == 0 && _activeGame is null))
             return;
 
         HashSet<string> running = await Task.Run(() =>

@@ -7,11 +7,19 @@ using System.Runtime.InteropServices;
 
 namespace Mach1CustomApp.Services;
 
+public enum CpuVendor
+{
+    Amd,
+    Intel,
+    Other,
+}
+
 /// <summary>
 /// O computador onde o app está rodando, do jeito que o resto do código precisa enxergar: qual
-/// é o processador, como estão os núcleos e de onde vem cada sensor. O ajuste da curva só existe
-/// em Ryzen com SMU conhecido (<see cref="Tuner"/>); tudo o mais funciona em qualquer máquina,
-/// mostrando o que der para ler.
+/// é o processador, como estão os núcleos e de onde vem cada sensor. Os ajustes só existem em
+/// Ryzen com SMU conhecido (<see cref="Tuner"/>): limites de PBO em quase todos, Curve Optimizer
+/// da série 5000 em diante. Tudo o mais funciona em qualquer máquina, Intel inclusive, mostrando
+/// o que der para ler.
 /// </summary>
 public sealed class Machine : IDisposable
 {
@@ -19,6 +27,7 @@ public sealed class Machine : IDisposable
     private readonly GpuMonitor? _nvidia;
     private readonly GenericSensors? _generic;
     private readonly EffectiveClock _clocks;
+    private readonly float? _genericLimit;
 
     /// <summary>Abre o acesso ao hardware. Demora um ou dois segundos; chamar fora da thread de UI.</summary>
     /// <param name="forceGeneric">Ignora o caminho Ryzen e o da NVIDIA, para testar o caminho genérico.</param>
@@ -26,18 +35,25 @@ public sealed class Machine : IDisposable
     {
         CpuName = (Registry.GetValue(@"HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\CentralProcessor\0", "ProcessorNameString", null) as string)?.Trim() ?? "Processador";
         NominalMhz = Registry.GetValue(@"HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\CentralProcessor\0", "~MHz", null) is int mhz ? mhz : 0;
-        CoreProcessors = ReadCoreProcessors();
+        Vendor = (Registry.GetValue(@"HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\CentralProcessor\0", "VendorIdentifier", null) as string) switch
+        {
+            "GenuineIntel" => CpuVendor.Intel,
+            "AuthenticAMD" => CpuVendor.Amd,
+            _ => CpuVendor.Other,
+        };
+        CoreProcessors = ReadCoreProcessors(out int withSmt, out int withoutSmt);
+        // Num processador híbrido da Intel os núcleos P têm duas threads e os E, uma.
+        CoreSummary = Vendor == CpuVendor.Intel && withSmt > 0 && withoutSmt > 0
+            ? $"{withSmt} núcleos P e {withoutSmt} núcleos E, {Environment.ProcessorCount} threads"
+            : $"{CoreProcessors.Length} núcleos, {Environment.ProcessorCount} threads";
         DriverInstalled = CpuTuner.IsDriverInstalled;
 
         if (!forceGeneric && DriverInstalled)
         {
             try
             {
-                var tuner = new CpuTuner();
-                if (tuner.SupportsCurveOptimizer)
-                    Tuner = tuner;
-                else
-                    tuner.Dispose();
+                // Qualquer Ryzen que a biblioteca conheça entra aqui, com ou sem Curve Optimizer.
+                Tuner = new CpuTuner();
             }
             catch (Exception ex)
             {
@@ -64,7 +80,13 @@ public sealed class Machine : IDisposable
         }
 
         _clocks = new EffectiveClock(NominalMhz);
+        _genericLimit = Tuner is null ? _generic?.ReadCpuLimit() : null;
     }
+
+    public CpuVendor Vendor { get; }
+
+    /// <summary>Contagem de núcleos e threads em texto, separando núcleos P e E quando existem.</summary>
+    public string CoreSummary { get; }
 
     public string CpuName { get; }
 
@@ -88,12 +110,12 @@ public sealed class Machine : IDisposable
     public int LogicalCount => Environment.ProcessorCount;
 
     /// <summary>Temperatura em que o processador começa a se limitar, em °C.</summary>
-    public float CpuTemperatureLimit => Tuner?.TemperatureLimit ?? 100;
+    public float CpuTemperatureLimit => Tuner?.TemperatureLimit ?? _genericLimit ?? 100;
 
     public float? ReadCpuTemperature() => Tuner?.GetTemperature() ?? _generic?.ReadCpuTemperature();
 
-    /// <summary>Potência dos núcleos, em watts; só em Ryzen com telemetria.</summary>
-    public float? ReadCorePower() => Tuner?.GetCorePowerWatts();
+    /// <summary>Potência do processador, em watts: a dos núcleos em Ryzen com telemetria, a do encapsulamento nos demais.</summary>
+    public float? ReadCorePower() => Tuner is { } tuner ? tuner.GetCorePowerWatts() : _generic?.ReadCpuPower();
 
     public SensorSnapshot ReadSensors()
     {
@@ -124,8 +146,9 @@ public sealed class Machine : IDisposable
         : NominalMhz * 1.6;
 
     /// <summary>Descobre os núcleos físicos pelo Windows; funciona com núcleos de tamanhos diferentes e com ou sem SMT.</summary>
-    private static int[] ReadCoreProcessors()
+    private static int[] ReadCoreProcessors(out int withSmt, out int withoutSmt)
     {
+        withSmt = withoutSmt = 0;
         const int RelationProcessorCore = 0;
         uint length = 0;
         GetLogicalProcessorInformation(IntPtr.Zero, ref length);
@@ -144,8 +167,14 @@ public sealed class Machine : IDisposable
                     continue;
 
                 ulong mask = (ulong)Marshal.ReadInt64(buffer, offset);
-                if (mask != 0)
-                    cores.Add(System.Numerics.BitOperations.TrailingZeroCount(mask));
+                if (mask == 0)
+                    continue;
+
+                cores.Add(System.Numerics.BitOperations.TrailingZeroCount(mask));
+                if (System.Numerics.BitOperations.PopCount(mask) > 1)
+                    withSmt++;
+                else
+                    withoutSmt++;
             }
 
             cores.Sort();

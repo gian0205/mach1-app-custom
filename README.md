@@ -59,7 +59,9 @@ Para gerar o instalador a partir do código, veja `gerar-instalador.cmd` e `inst
 ## Em que máquinas funciona
 
 - **Tela do water cooler, sensores e benchmark**: qualquer PC com Windows 10/11 de 64 bits.
-- **Curve Optimizer, limites de PBO, teste de estabilidade e perfis por jogo**: só Ryzen da série 5000 em diante. Em outros processadores essas partes ficam desabilitadas, com um aviso.
+- **Curve Optimizer, teste de estabilidade e perfis por jogo**: Ryzen da série 5000 em diante.
+- **Limites de PBO**: qualquer Ryzen que a ZenStates-Core conheça, inclusive os anteriores à série 5000.
+- **Intel e demais processadores**: são reconhecidos (nome, núcleos P e E, temperatura, limite térmico, clock e potência), mas sem ajustes; as partes de ajuste ficam desabilitadas, com um aviso.
 - **Temperatura do processador**: exige o driver PawnIO. Em Ryzen suportado vem do SMU; nos demais (Intel, por exemplo), da LibreHardwareMonitor.
 - **Placa de vídeo**: NVIDIA pela NVML; AMD e Intel pela LibreHardwareMonitor.
 - A faixa de margem (-40 em Zen 4/5, -30 antes), o limite de temperatura e os limites de PBO iniciais vêm do próprio processador.
@@ -80,7 +82,7 @@ Se a pasta do projeto tiver um caminho muito longo, a compilação falha com `MS
 Argumentos:
 
 - `--edit-layout` abre direto o editor de layout da tela
-- A variável de ambiente `MACH1_GENERIC=1` simula um PC sem Ryzen suportado e sem NVIDIA, para testar esse caminho
+- As variáveis de ambiente `MACH1_GENERIC=1` (PC sem Ryzen suportado e sem NVIDIA) e `MACH1_NO_CO=1` (Ryzen sem Curve Optimizer) simulam outras máquinas, para testar esses caminhos
 - `--tray` abre só na bandeja (é como a tarefa agendada chama o app)
 - `--tab N` abre direto na aba N (0 a 4)
 - `--quit` encerra a cópia aberta do jeito normal (devolve as ventoinhas à placa-mãe)

@@ -45,6 +45,37 @@ public sealed class GenericSensors : IDisposable
         return package?.Value ?? (temperatures.Length > 0 ? temperatures.Max(s => s.Value) : null);
     }
 
+    /// <summary>
+    /// Temperatura máxima do processador (TjMax). Em Intel ela sai de um par de sensores: a
+    /// temperatura de um núcleo mais a distância dele até o TjMax. Null quando não há esse par.
+    /// </summary>
+    public float? ReadCpuLimit()
+    {
+        if (_cpu is null)
+            return null;
+
+        _cpu.Update();
+        const string suffix = " Distance to TjMax";
+        foreach (ISensor distance in _cpu.Sensors.Where(s => s.SensorType == SensorType.Temperature && s.Name.EndsWith(suffix, StringComparison.Ordinal)))
+        {
+            string core = distance.Name[..^suffix.Length];
+            ISensor? temperature = _cpu.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Temperature && s.Name == core);
+            if (temperature?.Value is float t && distance.Value is float d && t > 0)
+                return MathF.Round(t + d);
+        }
+        return null;
+    }
+
+    /// <summary>Potência do encapsulamento do processador, em watts, quando o processador a informa.</summary>
+    public float? ReadCpuPower()
+    {
+        if (_cpu is null)
+            return null;
+
+        return _cpu.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Power && s.Value is > 0 &&
+            s.Name.Contains("Package", StringComparison.OrdinalIgnoreCase))?.Value;
+    }
+
     public GpuReading ReadGpu()
     {
         if (_gpu is null)

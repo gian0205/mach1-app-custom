@@ -82,6 +82,13 @@ public partial class MainViewModel : ViewModelBase, IDisposable
     /// <summary>Dá para ajustar o processador agora: é um Ryzen suportado e nada está em andamento.</summary>
     public bool CanTune => IsReady && HasTuner;
 
+    /// <summary>Dá para mexer na curva agora: o processador tem Curve Optimizer e nada está em andamento.</summary>
+    public bool CanTuneCurve => IsReady && HasCurve;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanTuneCurve))]
+    private bool _hasCurve;
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanTune))]
     private bool _hasTuner;
@@ -113,7 +120,7 @@ public partial class MainViewModel : ViewModelBase, IDisposable
 
     /// <summary>O app terminou de iniciar e nada está sendo aplicado ou testado.</summary>
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(CanTune))]
+    [NotifyPropertyChangedFor(nameof(CanTune), nameof(CanTuneCurve))]
     private bool _isReady;
 
     [ObservableProperty]
@@ -165,14 +172,24 @@ public partial class MainViewModel : ViewModelBase, IDisposable
 
         CpuName = machine.CpuName;
         DriverMissing = !machine.DriverInstalled;
-        HasTuner = machine.Tuner is not null;
+        HasTuner = machine.Tuner is { SupportsLimits: true };
+        HasCurve = machine.Tuner is { SupportsCurveOptimizer: true };
 
         Cores.Clear();
         if (machine.Tuner is { } tuner)
         {
-            Details = $"{tuner.CodeName}, {tuner.CoreCount} núcleos, firmware SMU {tuner.SmuVersion}";
-            for (int i = 0; i < tuner.CoreCount; i++)
-                Cores.Add(new CoreViewModel(i, tuner.MinMargin));
+            Details = $"{tuner.CodeName}, {machine.CoreSummary}, firmware SMU {tuner.SmuVersion}";
+            if (tuner.SupportsCurveOptimizer)
+            {
+                for (int i = 0; i < tuner.CoreCount; i++)
+                    Cores.Add(new CoreViewModel(i, tuner.MinMargin));
+            }
+            else
+            {
+                ErrorMessage = "Este Ryzen é anterior à série 5000 e não tem Curve Optimizer. " +
+                               (tuner.SupportsLimits ? "Os limites de PBO estão disponíveis; " : "") +
+                               "a tela do water cooler, as ventoinhas, os sensores e o benchmark funcionam normalmente.";
+            }
 
             var stock = await Task.Run(tuner.GetStockLimits);
             if (stock is var (ppt, tdc))
@@ -187,10 +204,18 @@ public partial class MainViewModel : ViewModelBase, IDisposable
         }
         else
         {
-            Details = $"{machine.CoreCount} núcleos, {machine.LogicalCount} threads";
+            Details = machine.CoreSummary;
             if (machine.DriverInstalled)
-                ErrorMessage = "O ajuste da curva e dos limites só existe em Ryzen da série 5000 em diante, e este processador não é um deles. " +
-                               "A tela do water cooler, os sensores e o benchmark funcionam normalmente.";
+            {
+                ErrorMessage = machine.Vendor switch
+                {
+                    CpuVendor.Intel => "Processador Intel: a tela do water cooler, as ventoinhas, os sensores e o benchmark funcionam. " +
+                                       "O Curve Optimizer e os limites de PBO são recursos de Ryzen e ficam desabilitados.",
+                    CpuVendor.Amd => "Este processador AMD não é reconhecido pela biblioteca de ajuste, então a curva e os limites ficam desabilitados. " +
+                                     "A tela do water cooler, as ventoinhas, os sensores e o benchmark funcionam.",
+                    _ => "Processador não reconhecido para ajustes. A tela do water cooler, as ventoinhas, os sensores e o benchmark funcionam.",
+                };
+            }
         }
         OnPropertyChanged(nameof(MinMargin));
 

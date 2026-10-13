@@ -31,7 +31,7 @@ public partial class MainViewModel
     [RelayCommand]
     private async Task RunStabilityTestAsync()
     {
-        if (_machine is not { Tuner: { } tuner } machine || IsTesting || !IsReady)
+        if (_machine is not { Tuner: { SupportsCurveOptimizer: true } tuner } machine || IsTesting || !IsReady)
             return;
 
         var duration = TimeSpan.FromSeconds((double)(TestSeconds ?? 60));

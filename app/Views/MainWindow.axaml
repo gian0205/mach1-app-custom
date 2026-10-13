@@ -63,7 +63,7 @@
                 <Grid ColumnDefinitions="*,330" ColumnSpacing="34">
 
                     <!-- Curve Optimizer: a única superfície elevada da aba -->
-                    <Border Classes="panel" IsEnabled="{Binding CanTune}">
+                    <Border Classes="panel" IsEnabled="{Binding CanTuneCurve}">
                         <DockPanel>
                             <StackPanel DockPanel.Dock="Top" Spacing="6">
                                 <TextBlock Text="Curve Optimizer" Classes="heading" />
@@ -151,7 +151,7 @@
                                     <NumericUpDown Grid.Column="1" Value="{Binding TestSeconds}" FormatString="0" Minimum="10" Maximum="900" Increment="10" />
                                 </Grid>
                                 <Button Content="Testar a curva em vigor" Command="{Binding RunStabilityTestCommand}"
-                                        IsVisible="{Binding IsNotTesting}" IsEnabled="{Binding CanTune}" />
+                                        IsVisible="{Binding IsNotTesting}" IsEnabled="{Binding CanTuneCurve}" />
                                 <Button Content="Cancelar o teste" Command="{Binding CancelStabilityTestCommand}"
                                         IsVisible="{Binding IsTesting}" />
                                 <ProgressBar Value="{Binding TestProgress}" Maximum="100" IsVisible="{Binding IsTesting}" />

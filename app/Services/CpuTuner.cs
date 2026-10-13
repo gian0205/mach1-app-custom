@@ -39,8 +39,31 @@ public sealed class CpuTuner : IDisposable
         // Zen 4 e Zen 5 (mesmo tipo de SMU) vão a -50 e limitam em 95 °C; os anteriores, a -30 e 90 °C.
         bool zen4OrNewer = _cpu.smu.SMU_TYPE == ZenStates.Core.SMU.SmuType.TYPE_CPU4;
         MinMargin = zen4OrNewer ? DefaultMinMargin : -30;
-        TemperatureLimit = zen4OrNewer ? 95 : 90;
+        TemperatureLimit = LimitFor(_cpu.info.codeName, CpuName);
+
+        // MACH1_NO_CO=1 finge um Ryzen sem Curve Optimizer (Zen 2 ou anterior), para testar esse caminho.
+        SupportsCurveOptimizer = Environment.GetEnvironmentVariable("MACH1_NO_CO") is null &&
+            (_cpu.smu.Rsmu.SMU_MSG_SetDldoPsmMargin > 0 || _cpu.smu.Mp1Smu.SMU_MSG_SetDldoPsmMargin > 0);
+        SupportsLimits = _cpu.smu.Rsmu.SMU_MSG_SetFastLimit > 0 || _cpu.smu.Mp1Smu.SMU_MSG_SetFastLimit > 0;
     }
+
+    /// <summary>
+    /// Temperatura máxima de operação por geração, conforme as especificações da AMD. É uma regra
+    /// geral por família; modelos específicos fogem dela por alguns graus.
+    /// </summary>
+    private static float LimitFor(Cpu.CodeName codeName, string cpuName) => codeName switch
+    {
+        // Zen 4 e Zen 5 de mesa e seus derivados.
+        Cpu.CodeName.Raphael or Cpu.CodeName.GraniteRidge or Cpu.CodeName.DragonRange => 95,
+        // Zen 3 de mesa: 90 °C, menos os de 65 W (5600X, 5600, 5700), que vão a 95 °C.
+        Cpu.CodeName.Vermeer => cpuName.Contains("5600") || cpuName.Contains("5700 ") ? 95 : 90,
+        // Zen+ de 105 W.
+        Cpu.CodeName.PinnacleRidge => cpuName.Contains("2700X") ? 85 : 95,
+        // Threadripper das primeiras gerações: 68 °C.
+        Cpu.CodeName.Whitehaven or Cpu.CodeName.Colfax or Cpu.CodeName.CastlePeak => 68,
+        Cpu.CodeName.Chagall or Cpu.CodeName.StormPeak or Cpu.CodeName.ShimadaPeak => 95,
+        _ => 95,
+    };
 
     /// <summary>Menor margem que o app deixa aplicar neste processador.</summary>
     public int MinMargin { get; }
@@ -55,9 +78,11 @@ public sealed class CpuTuner : IDisposable
     public int CoreCount { get; }
     public int ThreadsPerCore { get; }
 
-    /// <summary>Só famílias com Curve Optimizer por núcleo via SMU (Zen 3 em diante).</summary>
-    public bool SupportsCurveOptimizer =>
-        _cpu.smu.Rsmu.SMU_MSG_SetDldoPsmMargin > 0 || _cpu.smu.Mp1Smu.SMU_MSG_SetDldoPsmMargin > 0;
+    /// <summary>Curve Optimizer por núcleo via SMU: Zen 3 (série 5000) em diante.</summary>
+    public bool SupportsCurveOptimizer { get; }
+
+    /// <summary>Limites de PBO (PPT, TDC, EDC) via SMU: praticamente todo Ryzen.</summary>
+    public bool SupportsLimits { get; }
 
     private uint CoreMask(int core) =>
         _cpu.MakeCoreMaskForLogicalCore(core) ?? _cpu.MakeCoreMask((uint)core);
@@ -129,7 +154,9 @@ public sealed class CpuTuner : IDisposable
     {
         var log = new List<string>();
 
-        for (int core = 0; core < Math.Min(CoreCount, profile.CoreMargins.Length); core++)
+        // Sem Curve Optimizer não há margem a aplicar, só os limites.
+        int cores = SupportsCurveOptimizer ? Math.Min(CoreCount, profile.CoreMargins.Length) : 0;
+        for (int core = 0; core < cores; core++)
         {
             int margin = Math.Clamp(profile.CoreMargins[core], MinMargin, MaxMargin);
             bool ok = SetCoreMargin(core, margin);
