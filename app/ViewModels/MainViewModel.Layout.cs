@@ -156,7 +156,7 @@ public partial class MainViewModel
     [RelayCommand]
     private void ApplyLayoutTemplate()
     {
-        LcdElement Label(string text, double y) => new() { Kind = LcdElementKind.Text, X = 56, Y = y, Width = 350, Height = 40, Text = text, Color = 0xFF95A0B5 };
+        LcdElement Label(string text, double y) => new() { Kind = LcdElementKind.Text, X = 56, Y = y, Width = 400, Height = 44, Text = text, Color = 0xFFB8C0CF };
         LcdElement Value(int sensor, double y, double height, int align = 0, double x = 56, double width = 608) =>
             new() { Kind = LcdElementKind.Sensor, X = x, Y = y, Width = width, Height = height, Sensor = sensor, Align = align };
         LcdElement Bar(int sensor, double y) => new() { Kind = LcdElementKind.Bar, X = 56, Y = y, Width = 608, Height = 12, Sensor = sensor };

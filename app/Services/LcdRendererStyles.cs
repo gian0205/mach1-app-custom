@@ -93,7 +93,7 @@ public sealed partial class LcdRenderer
         DrawLegendValue(canvas, Margin, 150, "Processador", FormatTemperature(sensors.CpuTemperature, 1) + " °C", cpuColor);
         DrawLegendValue(canvas, Margin + half + 10, 150, "Placa de vídeo", FormatTemperature(sensors.Gpu.Temperature, 0) + " °C", gpuColor);
 
-        float top = 372, bottom = h - 70;
+        float top = 380, bottom = h - 78;
         SKRect temps, loads;
         // Sem altura para empilhar (tela deitada ou quadrada), os dois gráficos ficam lado a lado.
         if (wide || h < 1000)
@@ -104,19 +104,19 @@ public sealed partial class LcdRenderer
         }
         else
         {
-            const float gap = 110;
+            const float gap = 124;
             float middle = top + (bottom - top - gap) * 0.6f;
             temps = new SKRect(Margin, top, right, middle);
             loads = new SKRect(Margin, middle + gap, right, bottom);
         }
 
         (float min, float max) = TemperatureRange(history);
-        DrawText(canvas, "Temperatura, em °C", temps.Left, temps.Top - 20, 26, _muted, _regular);
+        DrawText(canvas, "Temperatura, em °C", temps.Left, temps.Top - 22, 32, _muted, _regular);
         DrawChartFrame(canvas, temps, min, max, max - min > 60 ? 20 : 10);
         DrawSeries(canvas, temps, history.GpuTemp, min, max, gpuColor, 4, fill: false);
         DrawSeries(canvas, temps, history.CpuTemp, min, max, cpuColor, 5, fill: true);
 
-        DrawText(canvas, "Uso, em %", loads.Left, loads.Top - 20, 26, _muted, _regular);
+        DrawText(canvas, "Uso, em %", loads.Left, loads.Top - 22, 32, _muted, _regular);
         DrawChartFrame(canvas, loads, 0, 100, 50);
         DrawSeries(canvas, loads, history.GpuLoad, 0, 100, gpuColor, 4, fill: false);
         DrawSeries(canvas, loads, history.CpuLoad, 0, 100, _accent, 5, fill: true);
@@ -127,7 +127,7 @@ public sealed partial class LcdRenderer
         // A pastilha na cor da linha liga o número à série do gráfico.
         _paint.Color = color;
         canvas.DrawRoundRect(x, top + 14, 26, 8, 4, 4, _paint);
-        DrawText(canvas, label, x + 38, top + 28, 28, _muted, _regular);
+        DrawText(canvas, label, x + 38, top + 30, 34, _muted, _regular);
         DrawText(canvas, value, x - 3, top + 128, 88, color, _light);
     }
 
@@ -168,11 +168,17 @@ public sealed partial class LcdRenderer
         {
             float y = area.Bottom - area.Height * (value - min) / (max - min);
             canvas.DrawLine(area.Left, y, area.Right, y, _stroke);
-            DrawText(canvas, value.ToString("0", CultureInfo.InvariantCulture), area.Right, y - 7, 20, _muted, _regular, SKTextAlign.Right);
+            // O valor fica em cima da linha; o da linha do topo, embaixo, para não encostar no título.
+            bool isTop = value + step > max + 0.01f;
+            float baseline = isTop ? y + 28 : y - 8;
+            // Em gráfico baixo, o valor do topo cairia em cima do da linha seguinte: fica sem.
+            if (isTop && area.Height * step / (max - min) < 60)
+                continue;
+            DrawText(canvas, value.ToString("0", CultureInfo.InvariantCulture), area.Right, baseline, 28, _muted, _regular, SKTextAlign.Right);
         }
 
-        DrawText(canvas, "3 min atrás", area.Left, area.Bottom + 30, 20, _muted, _regular);
-        DrawText(canvas, "agora", area.Right, area.Bottom + 30, 20, _muted, _regular, SKTextAlign.Right);
+        DrawText(canvas, "3 min atrás", area.Left, area.Bottom + 36, 28, _muted, _regular);
+        DrawText(canvas, "agora", area.Right, area.Bottom + 36, 28, _muted, _regular, SKTextAlign.Right);
     }
 
     /// <summary>
@@ -275,7 +281,7 @@ public sealed partial class LcdRenderer
             // Em pé: os dois medidores grandes um embaixo do outro.
             DrawGauge(canvas, w / 2, 372, 196, 26, cpuFraction, cpuColor, FormatTemperature(sensors.CpuTemperature, 1), "Processador, °C");
             DrawGauge(canvas, w / 2, 800, 196, 26, gpuFraction, gpuColor, FormatTemperature(gpu.Temperature, 0), "Placa de vídeo, °C");
-            smallY = h - 150;
+            smallY = h - 176;
             smallRadius = 84;
         }
         else
@@ -284,21 +290,24 @@ public sealed partial class LcdRenderer
             float y = 150 + radius;
             DrawGauge(canvas, w * 0.28f, y, radius, 22, cpuFraction, cpuColor, FormatTemperature(sensors.CpuTemperature, 1), "Processador, °C");
             DrawGauge(canvas, w * 0.72f, y, radius, 22, gpuFraction, gpuColor, FormatTemperature(gpu.Temperature, 0), "Placa de vídeo, °C");
-            smallRadius = Math.Min(64, (h - y - radius - 40) / 2.1f);
-            smallY = h - 40 - smallRadius;
+            smallRadius = Math.Min(64, (h - y - radius - 90) / 2.1f);
+            smallY = h - 72 - smallRadius;
         }
 
         float? ram = sensors.RamUsedGb / sensors.RamTotalGb;
-        DrawGauge(canvas, w * 0.19f, smallY, smallRadius, 13, sensors.CpuLoad / 100, _accent, Number(sensors.CpuLoad), "Uso CPU, %");
-        DrawGauge(canvas, w * 0.5f, smallY, smallRadius, 13, gpu.Load / 100, _accent, Number(gpu.Load), "Uso GPU, %");
-        DrawGauge(canvas, w * 0.81f, smallY, smallRadius, 13, ram, _accent, Number(ram * 100), "Memória, %");
+        DrawGauge(canvas, w * 0.19f, smallY, smallRadius, 13, sensors.CpuLoad / 100, _accent, Number(sensors.CpuLoad), "CPU, %", labelBelow: true);
+        DrawGauge(canvas, w * 0.5f, smallY, smallRadius, 13, gpu.Load / 100, _accent, Number(gpu.Load), "GPU, %", labelBelow: true);
+        DrawGauge(canvas, w * 0.81f, smallY, smallRadius, 13, ram, _accent, Number(ram * 100), "Memória, %", labelBelow: true);
     }
 
     private static string Number(float? value) => value is float v && !float.IsNaN(v) ? v.ToString("0", CultureInfo.InvariantCulture) : "—";
 
-    /// <summary>Medidor em arco de 270°, com o valor no meio e o rótulo na abertura de baixo.</summary>
+    /// <summary>
+    /// Medidor em arco de 270°, com o valor no meio. O rótulo vai na abertura de baixo do arco; nos
+    /// medidores pequenos ele não caberia ali em tamanho legível e vai embaixo do medidor.
+    /// </summary>
     private void DrawGauge(SKCanvas canvas, float cx, float cy, float radius, float thickness, float? fraction,
-        SKColor color, string value, string label)
+        SKColor color, string value, string label, bool labelBelow = false)
     {
         var box = new SKRect(cx - radius, cy - radius, cx + radius, cy + radius);
         using (var track = new SKPath())
@@ -318,7 +327,10 @@ public sealed partial class LcdRenderer
 
         float size = radius * (value.Length > 3 ? 0.62f : 0.74f);
         DrawText(canvas, value, cx, cy + size * 0.34f, size, color, _light, SKTextAlign.Center);
-        DrawText(canvas, label, cx, cy + radius * 0.86f, Math.Max(18, radius * 0.15f), _muted, _regular, SKTextAlign.Center);
+        if (labelBelow)
+            DrawText(canvas, label, cx, cy + radius + 40, 30, _muted, _regular, SKTextAlign.Center);
+        else
+            DrawText(canvas, label, cx, cy + radius * 0.93f, Math.Max(30, radius * 0.18f), _muted, _regular, SKTextAlign.Center);
     }
 
     // ---------- Relógio ----------
@@ -336,7 +348,7 @@ public sealed partial class LcdRenderer
         // A hora na cor do texto: aqui ela é o assunto, e a cor de destaque fica para as temperaturas.
         DrawText(canvas, content.Time.ToString("HH:mm"), w / 2, baseline, size, _text, _light, SKTextAlign.Center);
         string date = content.Time.ToString("dddd, d 'de' MMMM", Portuguese);
-        DrawText(canvas, date, w / 2, baseline + Math.Max(54, size * 0.26f), Math.Max(30, size * 0.15f), _muted, _regular, SKTextAlign.Center);
+        DrawText(canvas, date, w / 2, baseline + Math.Max(58, size * 0.27f), Math.Max(38, size * 0.16f), _muted, _regular, SKTextAlign.Center);
 
         float top = h - block, half = (w - 2 * Margin - 40) / 2;
         DrawClockTemperature(canvas, Margin, top, half, "Processador", sensors.CpuTemperature, 1,
@@ -349,8 +361,8 @@ public sealed partial class LcdRenderer
         int decimals, float warm, float hot, float max)
     {
         SKColor color = TemperatureColor(temperature, warm, hot);
-        DrawText(canvas, label, x, top + 34, 28, _muted, _regular);
-        DrawText(canvas, FormatTemperature(temperature, decimals) + " °C", x - 3, top + 146, 84, color, _light);
+        DrawText(canvas, label, x, top + 36, 34, _muted, _regular);
+        DrawText(canvas, FormatTemperature(temperature, decimals) + " °C", x - 3, top + 148, 84, color, _light);
         float? fraction = temperature is float t ? Math.Max(0.02f, (t - 20) / (max - 20)) : null;
         DrawBar(canvas, x, top + 186, width, 12, fraction, color);
     }
@@ -367,10 +379,10 @@ public sealed partial class LcdRenderer
         float size = Math.Min(w * 0.36f, free * 0.5f);
         float baseline = free * 0.52f + size * 0.34f;
 
-        DrawText(canvas, "Processador", w / 2, baseline - size * 0.92f, Math.Max(30, size * 0.12f), _muted, _regular, SKTextAlign.Center);
+        DrawText(canvas, "Processador", w / 2, baseline - size * 0.92f, Math.Max(38, size * 0.15f), _muted, _regular, SKTextAlign.Center);
         DrawText(canvas, FormatTemperature(sensors.CpuTemperature, 1) + "°", w / 2 + size * 0.05f, baseline, size, color, _light, SKTextAlign.Center);
         string gpu = "Placa de vídeo  " + FormatTemperature(sensors.Gpu.Temperature, 0) + " °C";
-        DrawText(canvas, gpu, w / 2, baseline + Math.Max(60, size * 0.26f), Math.Max(32, size * 0.13f), _text, _regular, SKTextAlign.Center);
+        DrawText(canvas, gpu, w / 2, baseline + Math.Max(66, size * 0.28f), Math.Max(40, size * 0.16f), _text, _regular, SKTextAlign.Center);
 
         // Só a linha, sem grade nem eixo: mostra para onde a temperatura está indo.
         (float min, float max) = TemperatureRange(history);
@@ -397,8 +409,8 @@ public sealed partial class LcdRenderer
                 TemperatureColor(sensors.CpuTemperature, _temps.CpuWarm, _temps.CpuHot)),
             ("Placa de vídeo", FormatTemperature(gpu.Temperature, 0) + " °C", history.GpuTemp, min, max,
                 TemperatureColor(gpu.Temperature, _temps.GpuWarm, _temps.GpuHot)),
-            ("Uso do processador", Percent(sensors.CpuLoad), history.CpuLoad, 0, 100, _accent),
-            ("Uso da placa de vídeo", Percent(gpu.Load), history.GpuLoad, 0, 100, _accent),
+            ("Uso da CPU", Percent(sensors.CpuLoad), history.CpuLoad, 0, 100, _accent),
+            ("Uso da GPU", Percent(gpu.Load), history.GpuLoad, 0, 100, _accent),
             ("Memória", sensors.RamUsedGb is float used ? string.Create(CultureInfo.InvariantCulture, $"{used:0.0} GB") : "—",
                 history.Ram, 0, 100, _accent),
             ("Consumo da GPU", gpu.Watts is float now ? $"{now:0} W" : "—", history.GpuWatts, 0, watts, _accent),
@@ -418,12 +430,16 @@ public sealed partial class LcdRenderer
             _paint.Color = tileColor;
             canvas.DrawRoundRect(x, y, tileWidth, tileHeight, 20, 20, _paint);
 
-            float valueSize = Math.Min(64, tileHeight * 0.24f);
-            DrawText(canvas, tile.Label, x + 22, y + 40, 24, _muted, _regular);
-            DrawText(canvas, tile.Value, x + 20, y + 48 + valueSize, valueSize, tile.Color, _light);
+            // Rótulo e valor em tamanho de leitura; o minigráfico fica com o que sobra.
+            float valueSize = Math.Min(78, tileHeight * 0.26f);
+            DrawText(canvas, tile.Label, x + 22, y + 46, 32, _muted, _regular);
+            DrawText(canvas, tile.Value, x + 20, y + 58 + valueSize, valueSize, tile.Color, _regular);
 
-            var area = new SKRect(x + 22, y + 64 + valueSize, x + tileWidth - 22, y + tileHeight - 22);
-            if (area.Height > 24)
+            var area = new SKRect(x + 22, y + 78 + valueSize, x + tileWidth - 22, y + tileHeight - 22);
+            // Bloco baixo: não sobra altura embaixo do valor, então o minigráfico vai ao lado dele.
+            if (area.Height < 44)
+                area = new SKRect(x + tileWidth * 0.62f, y + 66, x + tileWidth - 22, y + tileHeight - 22);
+            if (area.Height > 20)
                 DrawSeries(canvas, area, tile.Series, tile.Min, tile.Max, tile.Color, 3.5f, fill: true);
         }
     }

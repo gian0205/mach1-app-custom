@@ -29,7 +29,7 @@ public sealed record LcdStats(double FramesPerSecond, int FrameKilobytes, int Qu
 public sealed class LcdService : IDisposable
 {
     private static readonly TimeSpan KeepAliveInterval = TimeSpan.FromSeconds(8);
-    private const int StillQuality = 90, MinQuality = 40, MaxAnimatedQuality = 85;
+    private const int StillQuality = 95, MinQuality = 40, MaxAnimatedQuality = 85;
 
     private readonly LcdRenderer _renderer = new();
     private readonly Thread _thread;

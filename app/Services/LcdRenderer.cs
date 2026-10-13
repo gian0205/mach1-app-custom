@@ -117,6 +117,9 @@ public sealed partial class LcdRenderer : IDisposable
     // Placas de vídeo costumam se limitar perto de 90 °C; o limite do processador vem no conteúdo.
     private const float GpuMax = 90;
 
+    // Abaixo deste tamanho o texto é desenhado em peso maior, para ler à distância.
+    private const float SmallText = 46;
+
     // Avisos de temperatura não seguem o tema: precisam continuar reconhecíveis. Em fundo claro
     // usam versões mais escuras, senão o laranja some.
     private static readonly SKColor EmberOnDark = SKColor.Parse("#F59A3C"), CriticalOnDark = SKColor.Parse("#F0605A");
@@ -136,6 +139,9 @@ public sealed partial class LcdRenderer : IDisposable
     private readonly SKTypeface _regular = SKTypeface.FromFamilyName("Bahnschrift", SKFontStyle.Normal);
     private readonly SKTypeface _light = SKTypeface.FromFamilyName("Bahnschrift",
         SKFontStyleWeight.Light, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright);
+    // Texto pequeno vai em peso maior: de longe, traço fino some antes de letra pequena.
+    private readonly SKTypeface _semibold = SKTypeface.FromFamilyName("Bahnschrift",
+        SKFontStyleWeight.SemiBold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright);
     private readonly SKPaint _paint = new() { IsAntialias = true };
 
     private SKColor _text, _accent, _muted, _track;
@@ -166,7 +172,7 @@ public sealed partial class LcdRenderer : IDisposable
         _accent = new SKColor(style.Theme.Accent);
         _neon = style.Theme.Neon;
         // Em fundo claro os rótulos precisam ficar mais perto da cor do texto para dar leitura.
-        _muted = Blend(background, _text, light ? 0.72f : 0.58f);
+        _muted = Blend(background, _text, light ? 0.8f : 0.74f);
         _track = Blend(background, _text, 0.13f);
         // Tubo apagado: quase some no fundo, com um resto da cor do tema.
         if (_neon)
@@ -284,9 +290,10 @@ public sealed partial class LcdRenderer : IDisposable
                 canvas.Save();
                 canvas.Translate(0, 150);
                 canvas.Scale(0.5f);
-                DrawCpuTemperature(canvas, content, 0);
+                // Desenhadas pela metade: o rótulo vai maior, para não ficar ilegível.
+                DrawCpuTemperature(canvas, content, 0, labelSize: 66);
                 canvas.Translate(ColumnWidth, 0);
-                DrawGpuTemperature(canvas, sensors.Gpu, 0);
+                DrawGpuTemperature(canvas, sensors.Gpu, 0, labelSize: 66);
                 canvas.Restore();
 
                 if (page == LcdPage.Curve)
@@ -309,11 +316,11 @@ public sealed partial class LcdRenderer : IDisposable
         canvas.Restore();
     }
 
-    private void DrawCpuTemperature(SKCanvas canvas, LcdContent content, float top) =>
-        DrawBigTemperature(canvas, "Processador", content.Sensors.CpuTemperature, top, decimals: 1, _temps.CpuWarm, _temps.CpuHot, content.CpuLimit);
+    private void DrawCpuTemperature(SKCanvas canvas, LcdContent content, float top, float labelSize = 38) =>
+        DrawBigTemperature(canvas, "Processador", content.Sensors.CpuTemperature, top, decimals: 1, _temps.CpuWarm, _temps.CpuHot, content.CpuLimit, labelSize);
 
-    private void DrawGpuTemperature(SKCanvas canvas, GpuReading gpu, float top) =>
-        DrawBigTemperature(canvas, "Placa de vídeo", gpu.Temperature, top, decimals: 0, _temps.GpuWarm, _temps.GpuHot, GpuMax);
+    private void DrawGpuTemperature(SKCanvas canvas, GpuReading gpu, float top, float labelSize = 38) =>
+        DrawBigTemperature(canvas, "Placa de vídeo", gpu.Temperature, top, decimals: 0, _temps.GpuWarm, _temps.GpuHot, GpuMax, labelSize);
 
     /// <summary>As linhas de sensores a partir de <paramref name="top"/>, quantas couberem até <paramref name="bottom"/>.</summary>
     private void DrawSensorRows(SKCanvas canvas, SensorSnapshot sensors, float top, float bottom)
@@ -339,10 +346,11 @@ public sealed partial class LcdRenderer : IDisposable
     }
 
     private void DrawBigTemperature(SKCanvas canvas, string label, float? temperature, float top,
-        int decimals, float warm, float hot, float max)
+        int decimals, float warm, float hot, float max, float labelSize = 38)
     {
         SKColor color = TemperatureColor(temperature, warm, hot);
-        DrawText(canvas, label, Left, top + 34, 32, _muted, _regular);
+        // Rótulo maior sobe um pouco, para não encostar no número.
+        DrawText(canvas, label, Left, top + 36 - (labelSize - 38) * 0.6f, labelSize, _muted, _regular);
 
         const float size = 190;
         string value = FormatTemperature(temperature, decimals);
@@ -360,8 +368,8 @@ public sealed partial class LcdRenderer : IDisposable
 
     private void DrawSensorRow(SKCanvas canvas, ref float y, string label, string value, float? fraction)
     {
-        DrawText(canvas, label, Left, y, 28, _muted, _regular);
-        DrawText(canvas, value, Right, y, 34, _text, _regular, SKTextAlign.Right);
+        DrawText(canvas, label, Left, y, 36, _muted, _regular);
+        DrawText(canvas, value, Right, y, 42, _text, _regular, SKTextAlign.Right);
         if (fraction is not null)
             DrawBar(canvas, Left, y + 20, Right - Left, 10, fraction, _accent);
         y += 104;
@@ -374,15 +382,15 @@ public sealed partial class LcdRenderer : IDisposable
         float min = content.MarginMin, max = CpuTuner.MaxMargin;
 
         DrawText(canvas, "Curve Optimizer", Left, top, 40, _text, _regular);
-        DrawText(canvas, "margem", marginRight, top, 26, _muted, _regular, SKTextAlign.Right);
-        DrawText(canvas, "MHz", Right, top, 26, _muted, _regular, SKTextAlign.Right);
+        DrawText(canvas, "margem", marginRight, top, 32, _muted, _regular, SKTextAlign.Right);
+        DrawText(canvas, "MHz", Right, top, 32, _muted, _regular, SKTextAlign.Right);
 
         int count = content.Margins.Length;
         if (count == 0)
             return;
 
         float rowHeight = Math.Min(98, Math.Max(10, available - 30) / count);
-        float fontSize = Math.Min(44, rowHeight * 0.5f);
+        float fontSize = Math.Min(44, rowHeight * 0.62f);
         float thickness = Math.Min(14, rowHeight * 0.2f);
         float zero = barLeft + (barRight - barLeft) * (0 - min) / (max - min);
 
@@ -455,7 +463,7 @@ public sealed partial class LcdRenderer : IDisposable
     private void DrawSmallTemperature(SKCanvas canvas, string label, float? temperature, float x,
         int decimals, float warm, float hot)
     {
-        DrawText(canvas, label, x, 180, 28, _muted, _regular);
+        DrawText(canvas, label, x, 180, 34, _muted, _regular);
         DrawText(canvas, FormatTemperature(temperature, decimals) + " °C", x - 3, 262, 78, TemperatureColor(temperature, warm, hot), _light);
     }
 
@@ -508,6 +516,9 @@ public sealed partial class LcdRenderer : IDisposable
     private void DrawText(SKCanvas canvas, string text, float x, float y, float size, SKColor color,
         SKTypeface typeface, SKTextAlign align = SKTextAlign.Left)
     {
+        if (ReferenceEquals(typeface, _regular) && size < SmallText)
+            typeface = _semibold;
+
         using var font = new SKFont(typeface, size) { Subpixel = true };
         if (_halo is SKColor halo)
         {
@@ -564,6 +575,7 @@ public sealed partial class LcdRenderer : IDisposable
         _paint.Dispose();
         _stroke.Dispose();
         _regular.Dispose();
+        _semibold.Dispose();
         _light.Dispose();
         _bitmap.Dispose();
         _panel?.Dispose();

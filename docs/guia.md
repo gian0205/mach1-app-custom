@@ -73,6 +73,8 @@ Há páginas prontas, estilos de painel e uma página livre:
 - **Minimalista**: só a temperatura do processador, enorme, com a linha dos últimos minutos.
 - **Blocos com minigráficos**: seis blocos, cada um com o valor e a linha dos últimos minutos.
 
+Os rótulos e valores pequenos de todas as páginas são desenhados em letra maior e mais grossa, para ler a tela a média distância.
+
 ![Página de temperaturas, página do Curve Optimizer e o alerta de temperatura](imagens/paginas-da-tela.png)
 
 A imagem acima mostra a página de temperaturas, a página do Curve Optimizer e a tela durante um alerta de temperatura.
