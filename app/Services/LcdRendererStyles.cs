@@ -70,6 +70,7 @@ public sealed partial class LcdRenderer
             case LcdPage.Gauges: DrawGaugesPage(canvas, content, w, h); break;
             case LcdPage.Clock: DrawClockPage(canvas, content, w, h); break;
             case LcdPage.Minimal: DrawMinimalPage(canvas, content, history, w, h); break;
+            case LcdPage.Weather: DrawWeatherPage(canvas, content, w, h, wide); break;
             default: DrawTilesPage(canvas, content, history, w, h, wide); break;
         }
         canvas.Restore();

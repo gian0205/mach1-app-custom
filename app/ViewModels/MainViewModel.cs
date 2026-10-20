@@ -35,6 +35,7 @@ public partial class MainViewModel : ViewModelBase, IDisposable
         nameof(TempWarnColor), nameof(TempHotColor),
         nameof(LcdWidthSetting), nameof(LcdHeightSetting), nameof(LcdSidewaysSetting),
         nameof(RgbEnabled), nameof(RgbMode), nameof(RgbColor), nameof(RgbBrightness), nameof(RgbPort),
+        nameof(WeatherEnabled), nameof(WeatherAutoLocation), nameof(WeatherUseInternet),
     ];
 
     private readonly bool _startedAtLogon;
@@ -288,6 +289,7 @@ public partial class MainViewModel : ViewModelBase, IDisposable
         LoadLcdSettings(_stored);
         LoadLayout(_stored);
         LoadRgbSettings(_stored);
+        LoadWeatherSettings(_stored);
 
         Games.Clear();
         foreach (GameProfile game in _stored.Games)
@@ -315,6 +317,7 @@ public partial class MainViewModel : ViewModelBase, IDisposable
         StoreLcdSettings(_stored);
         _stored.Layout = BuildLayout();
         StoreRgbSettings(_stored);
+        StoreWeatherSettings(_stored);
         _stored.Games = [.. Games];
         if (_fans is not null)
             _stored.Fans = Fans.Select(f => f.ToSetting()).ToList();
@@ -466,6 +469,8 @@ public partial class MainViewModel : ViewModelBase, IDisposable
             UpdateLcd(machine, sensors, clocks);
             await UpdateFansAsync(machine, sensors);
             await UpdateRgbAsync(sensors);
+            // A previsão vem da internet e pode demorar: corre por fora, sem segurar ventoinhas e tela.
+            _ = UpdateWeatherAsync();
 
             if (++_tick % 3 == 0)
                 await CheckGamesAsync();

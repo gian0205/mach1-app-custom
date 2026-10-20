@@ -137,6 +137,25 @@ sealed class Program
             .WithInterFont()
             .LogToTrace();
 
+    /// <summary>Uma previsão inventada, que passa por todos os desenhos de tempo, para a prévia.</summary>
+    private static WeatherSnapshot SampleWeather(DateTime now)
+    {
+        int[] hourCodes = [2, 2, 3, 61, 80, 95, 3, 1, 0, 0, 1, 2, 45, 45, 3, 3, 51, 63, 63, 2, 1, 0, 0, 1, 2];
+        DateTime hour = now.Date.AddHours(now.Hour);
+        var hours = new System.Collections.Generic.List<WeatherHour>();
+        for (int i = 0; i < hourCodes.Length; i++)
+        {
+            DateTime time = hour.AddHours(i);
+            float temperature = 21 + 5 * MathF.Sin((time.Hour - 9) / 24f * MathF.Tau);
+            hours.Add(new WeatherHour(time, temperature, hourCodes[i], time.Hour is >= 6 and < 18, i is >= 3 and <= 6 ? 70 - i * 5 : i > 15 && i < 19 ? 60 : 5));
+        }
+        int[] dayCodes = [2, 63, 95, 3, 0, 71, 45];
+        var days = new System.Collections.Generic.List<WeatherDay>();
+        for (int i = 0; i < dayCodes.Length; i++)
+            days.Add(new WeatherDay(now.Date.AddDays(i), dayCodes[i], 27 - i % 3 * 2 + (i == 4 ? 4 : 0), 17 - i % 2 * 2, dayCodes[i] is 63 or 95 ? 80 : 10));
+        return new WeatherSnapshot("São Paulo", now, 24.3f, 25.1f, 68, 12, 45, 2, true, hours, days);
+    }
+
     private static int WritePreview(string directory, string? imagePath)
     {
         using var renderer = new LcdRenderer();
@@ -166,8 +185,8 @@ sealed class Program
             history = buffer.Add(new SensorSnapshot(cpu, load, 11.6f + i / 60f, 31.1f, new GpuReading(gpu, gpuLoad, 3.2f, 16f, 30 + gpuLoad * 2.4f)));
         }
         SensorSnapshot last = new(68.2f, 71f, 14.6f, 31.1f, new GpuReading(61f, 92f, 9.8f, 16f, 251f));
-        var busy = content with { Sensors = last, History = history };
-        foreach ((string name, LcdPage page) in new[] { ("grafico", LcdPage.Chart), ("medidores", LcdPage.Gauges), ("relogio", LcdPage.Clock), ("minimalista", LcdPage.Minimal), ("blocos", LcdPage.Tiles) })
+        var busy = content with { Sensors = last, History = history, Weather = SampleWeather(content.Time) };
+        foreach ((string name, LcdPage page) in new[] { ("grafico", LcdPage.Chart), ("medidores", LcdPage.Gauges), ("relogio", LcdPage.Clock), ("minimalista", LcdPage.Minimal), ("blocos", LcdPage.Tiles), ("clima", LcdPage.Weather) })
         {
             File.WriteAllBytes(Path.Combine(directory, $"estilo-{name}.jpg"),
                 renderer.Render(busy, new LcdStyle(LcdTheme.Default, false, page, false, 55), background?.GetFrame(0, out _)));

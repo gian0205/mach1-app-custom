@@ -12,6 +12,8 @@ O MACH1 custom app usa ou acompanha os componentes abaixo. Cada um segue a licen
 | [SkiaSharp](https://github.com/mono/SkiaSharp) | Desenho do painel da tela | MIT |
 | [OpenRGB](https://openrgb.org/) 1.0 | Controle dos LEDs RGB; o instalador oferece o instalador oficial dele, sem alteração. Código-fonte: https://gitlab.com/CalcProgrammer1/OpenRGB (tag `release_1.0`) | GPL-2.0 ou posterior |
 | [OpenRGB.NET](https://github.com/diogotr7/OpenRGB.NET) | Cliente do servidor SDK do OpenRGB, para os LEDs | MIT |
+| [Open-Meteo](https://open-meteo.com/) | Previsão do tempo e busca de cidades, pela internet, para a página do clima (uso não comercial, sem chave) | Dados em CC BY 4.0 |
+| [ipinfo.io](https://ipinfo.io/) | Localização aproximada pelo endereço de internet, só quando a do Windows está desligada e a opção está marcada | Serviço de terceiros |
 | [HidSharp](https://www.zer7.com/software/hidsharp) | Comunicação USB com a tela | Apache-2.0 |
 | [CommunityToolkit.Mvvm](https://github.com/CommunityToolkit/dotnet) | Estrutura dos view models | MIT |
 | .NET | Plataforma; acompanha o instalador | MIT |

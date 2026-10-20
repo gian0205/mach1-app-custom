@@ -13,8 +13,9 @@ namespace Mach1CustomApp.ViewModels;
 public partial class MainViewModel
 {
     private const int CustomPageMode = 3;
-    // O último modo de página: 4 a 8 são os estilos prontos (gráfico, medidores, relógio, minimalista, blocos).
-    private const int LastPageMode = 8;
+    // O último modo de página: 4 a 8 são os estilos prontos (gráfico, medidores, relógio, minimalista,
+    // blocos) e 9 é o clima.
+    private const int LastPageMode = 9;
 
     private bool _editingLayout;
     private bool _loadingLayout;

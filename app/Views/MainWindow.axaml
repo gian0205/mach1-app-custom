@@ -260,6 +260,7 @@
                                     <ComboBoxItem Content="Relógio" />
                                     <ComboBoxItem Content="Minimalista" />
                                     <ComboBoxItem Content="Blocos com minigráficos" />
+                                    <ComboBoxItem Content="Clima" />
                                 </ComboBox>
                                 <Button Content="Editar o layout personalizado…" Click="OnEditLayout" />
                                 <TextBlock Classes="muted"
@@ -268,6 +269,31 @@
                                     <TextBlock Text="Ao alternar, trocar a cada (segundos)" VerticalAlignment="Center" TextWrapping="Wrap" />
                                     <NumericUpDown Grid.Column="1" Value="{Binding LcdPageSeconds}" FormatString="0" Minimum="2" Maximum="120" />
                                 </Grid>
+                            </StackPanel>
+
+                            <Border Classes="rule" />
+
+                            <StackPanel Spacing="10">
+                                <TextBlock Text="Clima" Classes="heading" />
+                                <CheckBox Content="Buscar a previsão do tempo (Open-Meteo)" IsChecked="{Binding WeatherEnabled}" />
+                                <StackPanel Spacing="8" IsEnabled="{Binding WeatherEnabled}">
+                                    <RadioButton GroupName="clima" Content="Localização automática" IsChecked="{Binding WeatherAutoLocation}" />
+                                    <CheckBox Margin="28,0,0,0" IsChecked="{Binding WeatherUseInternet}" IsEnabled="{Binding WeatherAutoLocation}">
+                                        <TextBlock TextWrapping="Wrap"
+                                                   Text="Se a localização do Windows estiver desligada, usar a aproximada pela internet (ipinfo.io)" />
+                                    </CheckBox>
+                                    <RadioButton GroupName="clima" Content="Cidade escolhida" IsChecked="{Binding WeatherManualLocation}" />
+                                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" Margin="28,0,0,0">
+                                        <TextBox Text="{Binding WeatherCitySearch}" Watermark="Nome da cidade" />
+                                        <Button Grid.Column="1" Content="Buscar" Command="{Binding SearchWeatherCityCommand}" />
+                                    </Grid>
+                                    <ComboBox Margin="28,0,0,0" ItemsSource="{Binding WeatherCityResults}" SelectedItem="{Binding SelectedWeatherCity}"
+                                              IsVisible="{Binding HasWeatherCityResults}" HorizontalAlignment="Stretch" PlaceholderText="Escolha a cidade" />
+                                    <TextBlock Classes="muted" Text="{Binding WeatherStatus}" TextWrapping="Wrap" />
+                                    <Button Content="Atualizar agora" Command="{Binding RefreshWeatherCommand}" />
+                                </StackPanel>
+                                <TextBlock Classes="muted" TextWrapping="Wrap"
+                                           Text="Escolha a página Clima em Conteúdo, ou use Temperatura lá fora, Tempo agora e Umidade lá fora no layout personalizado. A previsão é atualizada a cada 15 minutos. A localização automática usa a do Windows (Configurações > Privacidade > Localização). Dados do tempo: Open-Meteo.com, licença CC BY 4.0." />
                             </StackPanel>
 
                             <Border Classes="rule" />

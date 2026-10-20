@@ -16,6 +16,8 @@ App .NET 10 + Avalonia que ajusta o processador Ryzen de dentro do Windows, cont
 
 ![Os cinco estilos de painel](docs/imagens/estilos.png)
 
+![A página do clima](docs/imagens/clima.png)
+
 ## O que faz
 
 **Processador** (direto no SMU; nada é gravado na BIOS, tudo vale até o reboot)
@@ -45,6 +47,7 @@ App .NET 10 + Avalonia que ajusta o processador Ryzen de dentro do Windows, cont
 
 - Página de temperaturas e sensores (CPU, GPU, uso, memória, VRAM, consumo da GPU) e página do Curve Optimizer, fixas ou alternando
 - Cinco estilos de painel: gráfico de temperatura e uso dos últimos minutos, medidores, relógio, minimalista e blocos com minigráficos
+- Página de clima pela [Open-Meteo](https://open-meteo.com/): tempo agora, próximas horas e próximos dias, com localização automática ou cidade escolhida
 - Dezessete temas prontos, sete deles neon, com as barras desenhadas como tubos acesos
 - Cores à escolha, imagem, GIF ou vídeo de fundo, brilho, giro de 180° e opção de tela deitada, para o bloco montado de lado
 - Vídeo usa o `ffmpeg.exe` que vem com o MACH1-LCD (ou um na pasta do app ou no PATH)
@@ -118,6 +121,7 @@ Argumentos:
   - `Services/CpuTuner.cs` — comandos do SMU (só Ryzen suportado)
   - `Services/FanControl.cs` — ventoinhas e bomba pela LibreHardwareMonitor
   - `Services/RgbControl.cs` — LEDs pelo servidor SDK do OpenRGB
+  - `Services/Weather.cs` e `LcdRendererWeather.cs` — previsão da Open-Meteo, localização e a página do clima
   - `Services/GenericSensors.cs` — sensores pela LibreHardwareMonitor
   - `Services/LcdDevice.cs` — protocolo da tela (documentado no topo do arquivo)
   - `Services/LcdRenderer.cs` e `LcdService.cs` — desenho do painel e envio

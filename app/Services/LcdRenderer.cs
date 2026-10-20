@@ -32,14 +32,18 @@ public enum LcdPage
 
     /// <summary>Seis blocos, cada um com valor e minigráfico.</summary>
     Tiles,
+
+    /// <summary>Tempo agora e previsão, pela Open-Meteo.</summary>
+    Weather,
 }
 
 /// <summary>Os dados que o painel mostra em um quadro.</summary>
 /// <param name="CpuLimit">Temperatura em que o processador começa a se limitar, em °C.</param>
 /// <param name="MarginMin">Menor margem do Curve Optimizer neste processador.</param>
 /// <param name="History">Leituras dos últimos minutos, para as páginas com gráfico.</param>
+/// <param name="Weather">A previsão do tempo, quando o clima está ligado.</param>
 public sealed record LcdContent(string CpuName, SensorSnapshot Sensors, int?[] Margins, double[] ClocksMhz, DateTime Time,
-    float CpuLimit = 95, int MarginMin = CpuTuner.DefaultMinMargin, LcdHistory? History = null)
+    float CpuLimit = 95, int MarginMin = CpuTuner.DefaultMinMargin, LcdHistory? History = null, WeatherSnapshot? Weather = null)
 ;
 
 /// <summary>Quando e para que cor a temperatura muda conforme sobe.</summary>

@@ -278,7 +278,13 @@ public partial class MainViewModel
 
     partial void OnLcdNeonChanged(bool value) => PushLcdSettings();
 
-    partial void OnLcdPageModeChanged(int value) => PushLcdSettings();
+    partial void OnLcdPageModeChanged(int value)
+    {
+        PushLcdSettings();
+        // Escolher a página do clima já liga a busca da previsão.
+        if (value == WeatherPageMode && !_loading)
+            WeatherEnabled = true;
+    }
 
     partial void OnLcdPageSecondsChanged(decimal? value) => PushLcdSettings();
 
@@ -466,7 +472,7 @@ public partial class MainViewModel
             : "";
 
         _lcd.Content = new LcdContent(CpuName, sensors, Cores.Select(c => c.CurrentMargin).ToArray(), clocks, DateTime.Now,
-            machine.CpuTemperatureLimit, MinMargin, _lcdHistory.Add(sensors));
+            machine.CpuTemperatureLimit, MinMargin, _lcdHistory.Add(sensors), _weather);
 
         if (SelectedTab == LcdTab)
             RefreshLcdPreview();

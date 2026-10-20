@@ -72,6 +72,7 @@ Há páginas prontas, estilos de painel e uma página livre:
 - **Relógio**: a hora grande, a data e as duas temperaturas embaixo.
 - **Minimalista**: só a temperatura do processador, enorme, com a linha dos últimos minutos.
 - **Blocos com minigráficos**: seis blocos, cada um com o valor e a linha dos últimos minutos.
+- **Clima**: o tempo agora, as próximas horas e os próximos dias, pela Open-Meteo. Veja [Clima](#clima), abaixo.
 
 Os rótulos e valores pequenos de todas as páginas são desenhados em letra maior e mais grossa, para ler a tela a média distância.
 
@@ -110,6 +111,23 @@ A tela recebe os quadros por USB a cerca de 1,4 MB por segundo. Com fundo animad
 **Cores da temperatura**
 
 Com a opção ligada, a temperatura muda de cor ao passar de dois limites: atenção e crítico. Você define os dois limites para o processador e para a placa de vídeo, e as duas cores. **Voltar ao automático** usa o limite do seu processador: atenção 20 °C antes dele e crítico 7 °C antes.
+
+**Clima**
+
+![A página do clima, no tema padrão, em um tema neon e com a tela deitada](imagens/clima.png)
+
+A página **Clima** mostra o tempo agora (desenho, temperatura, descrição, máxima e mínima), sensação térmica, umidade, vento e chance de chuva, as próximas horas de 3 em 3 e os próximos dias, com a faixa entre a mínima e a máxima de cada um. Os dados vêm da [Open-Meteo](https://open-meteo.com/), que é gratuita e não pede cadastro, e são atualizados a cada 15 minutos.
+
+Na seção **Clima** da aba da tela:
+
+- **Buscar a previsão do tempo** liga a busca. Escolher a página Clima em **Conteúdo** já liga sozinho.
+- **Localização automática** usa a localização do Windows (Configurações > Privacidade > Localização, com o acesso de aplicativos ligado). Se ela estiver desligada e a opção logo abaixo estiver marcada, o app usa a localização aproximada pelo endereço de internet, pelo ipinfo.io: costuma acertar a cidade, mas às vezes cai na cidade do provedor.
+- **Cidade escolhida**: digite o nome, clique em **Buscar** e escolha na lista.
+- A linha embaixo mostra o lugar usado, a temperatura e a hora da última busca. **Atualizar agora** busca de novo a localização e a previsão.
+
+O layout personalizado ganhou três sensores com esses dados: **Temperatura lá fora**, **Tempo agora** e **Umidade lá fora**.
+
+Com a localização do Windows, a previsão vem só com as coordenadas, e o topo da página mostra "Clima" no lugar do nome da cidade.
 
 **Alerta de temperatura**
 

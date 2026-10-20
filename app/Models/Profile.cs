@@ -103,6 +103,25 @@ public sealed class Profile
 
     public List<FanSetting> Fans { get; set; } = [];
 
+    // Clima, pela Open-Meteo
+
+    public bool WeatherEnabled { get; set; }
+
+    /// <summary>Localização automática (Windows e, se preciso, internet) em vez da cidade escolhida.</summary>
+    public bool WeatherAutoLocation { get; set; } = true;
+
+    /// <summary>Sem a localização do Windows, usar a aproximada pelo endereço de internet.</summary>
+    public bool WeatherUseInternet { get; set; } = true;
+
+    /// <summary>A cidade escolhida na busca, quando a localização não é automática.</summary>
+    public string? WeatherCity { get; set; }
+
+    public string? WeatherCityDetail { get; set; }
+
+    public double WeatherLatitude { get; set; }
+
+    public double WeatherLongitude { get; set; }
+
     // LEDs do PC, pelo OpenRGB
 
     public bool RgbEnabled { get; set; }
