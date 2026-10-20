@@ -253,7 +253,7 @@
                                 <ComboBox SelectedIndex="{Binding LcdPageMode}" HorizontalAlignment="Stretch">
                                     <ComboBoxItem Content="Temperaturas e sensores" />
                                     <ComboBoxItem Content="Curve Optimizer" />
-                                    <ComboBoxItem Content="Alternar entre as duas" />
+                                    <ComboBoxItem Content="Rodízio de telas" />
                                     <ComboBoxItem Content="Layout personalizado" />
                                     <ComboBoxItem Content="Gráfico de temperatura e uso" />
                                     <ComboBoxItem Content="Medidores" />
@@ -265,10 +265,24 @@
                                 <Button Content="Editar o layout personalizado…" Click="OnEditLayout" />
                                 <TextBlock Classes="muted"
                                            Text="No editor você posiciona textos, sensores, barras, imagens e GIFs onde quiser." />
-                                <Grid ColumnDefinitions="*,118" ColumnSpacing="14">
-                                    <TextBlock Text="Ao alternar, trocar a cada (segundos)" VerticalAlignment="Center" TextWrapping="Wrap" />
-                                    <NumericUpDown Grid.Column="1" Value="{Binding LcdPageSeconds}" FormatString="0" Minimum="2" Maximum="120" />
-                                </Grid>
+                                <StackPanel Spacing="6" IsVisible="{Binding IsRotation}">
+                                    <TextBlock Classes="muted" TextWrapping="Wrap"
+                                               Text="Marque as telas do rodízio e quantos segundos cada uma fica. As setas mudam a ordem." />
+                                    <ItemsControl ItemsSource="{Binding LcdRotation}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:RotationPageViewModel">
+                                                <Grid ColumnDefinitions="*,110,Auto,Auto,Auto" ColumnSpacing="6" Margin="0,0,0,4">
+                                                    <CheckBox Content="{Binding Name}" IsChecked="{Binding Enabled}" />
+                                                    <NumericUpDown Grid.Column="1" Value="{Binding Seconds}" FormatString="0" Minimum="2" Maximum="600"
+                                                                   Increment="1" IsEnabled="{Binding Enabled}" />
+                                                    <TextBlock Grid.Column="2" Classes="muted" Text="s" VerticalAlignment="Center" />
+                                                    <Button Grid.Column="3" Content="↑" Command="{Binding MoveUpCommand}" Padding="10,4" />
+                                                    <Button Grid.Column="4" Content="↓" Command="{Binding MoveDownCommand}" Padding="10,4" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
                             </StackPanel>
 
                             <Border Classes="rule" />

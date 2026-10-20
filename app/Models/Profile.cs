@@ -60,6 +60,9 @@ public sealed class Profile
 
     public int LcdPageSeconds { get; set; } = 8;
 
+    /// <summary>As páginas do rodízio, na ordem, marcadas ou não, com o tempo de cada uma.</summary>
+    public List<RotationItem> LcdRotation { get; set; } = [];
+
     /// <summary>Imagem ou GIF de fundo; null deixa a cor de fundo lisa.</summary>
     public string? LcdImagePath { get; set; }
 
@@ -180,6 +183,18 @@ public sealed class FanSetting
     public int Source { get; set; }
 
     public List<FanCurvePoint> Curve { get; set; } = [];
+}
+
+/// <summary>Uma página do rodízio de telas.</summary>
+public sealed class RotationItem
+{
+    /// <summary>O modo de página: 0 temperaturas, 1 Curve Optimizer, 3 layout personalizado, 4 a 8 estilos, 9 clima.</summary>
+    public int Mode { get; set; }
+
+    public bool Enabled { get; set; }
+
+    /// <summary>Tempo na tela, em segundos.</summary>
+    public int Seconds { get; set; } = 8;
 }
 
 /// <summary>Um ponto da curva de ventoinha.</summary>

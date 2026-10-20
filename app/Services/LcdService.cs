@@ -9,10 +9,17 @@ using System.Threading;
 namespace Mach1CustomApp.Services;
 
 /// <summary>Opções do painel que o laço de desenho consulta a cada quadro.</summary>
-/// <param name="PageMode">0 = temperaturas, 1 = Curve Optimizer, 2 = alterna as duas, 3 = layout personalizado, 4 = gráfico, 5 = medidores, 6 = relógio, 7 = minimalista, 8 = blocos, 9 = clima.</param>
+/// <summary>Uma página do rodízio e quantos segundos ela fica na tela.</summary>
+/// <param name="Mode">O modo de página, como em <see cref="LcdSettings.PageMode"/>.</param>
+public sealed record LcdRotationStep(int Mode, int Seconds);
+
+/// <summary>Opções do painel que o laço de desenho consulta a cada quadro.</summary>
+/// <param name="PageMode">0 = temperaturas, 1 = Curve Optimizer, 2 = rodízio, 3 = layout personalizado, 4 = gráfico, 5 = medidores, 6 = relógio, 7 = minimalista, 8 = blocos, 9 = clima.</param>
 /// <param name="Alert">Alguma temperatura passou do limite de alerta.</param>
 /// <param name="Temps">Cores da temperatura; null usa os valores automáticos.</param>
-public sealed record LcdSettings(LcdTheme Theme, bool Flipped, int PageMode, int PageSeconds, int ImageDim, bool Alert, LcdTempColors? Temps = null)
+/// <param name="Rotation">As páginas do rodízio, em ordem; vazio alterna temperaturas e Curve Optimizer.</param>
+public sealed record LcdSettings(LcdTheme Theme, bool Flipped, int PageMode, int PageSeconds, int ImageDim, bool Alert,
+    LcdTempColors? Temps = null, IReadOnlyList<LcdRotationStep>? Rotation = null)
 {
     public static LcdSettings Default { get; } = new(LcdTheme.Default, true, 0, 8, 55, false);
 }
@@ -215,21 +222,7 @@ public sealed class LcdService : IDisposable
                             interval = _background.FrameIntervalMs;
                             quality = _animatedQuality;
                         }
-                        LcdPage page = settings.PageMode switch
-                        {
-                            0 => LcdPage.Temperatures,
-                            1 => LcdPage.Curve,
-                            3 => LcdPage.Custom,
-                            4 => LcdPage.Chart,
-                            5 => LcdPage.Gauges,
-                            6 => LcdPage.Clock,
-                            7 => LcdPage.Minimal,
-                            8 => LcdPage.Tiles,
-                            9 => LcdPage.Weather,
-                            _ => (long)(_clock.Elapsed.TotalSeconds / Math.Max(2, settings.PageSeconds)) % 2 == 0
-                                ? LcdPage.Temperatures
-                                : LcdPage.Curve,
-                        };
+                        LcdPage page = settings.PageMode == 2 ? RotationPage(settings) : PageFor(settings.PageMode);
                         bool flash = settings.Alert && _clock.ElapsedMilliseconds / 500 % 2 == 0;
                         var style = new LcdStyle(settings.Theme, settings.Flipped, page, flash, settings.ImageDim, settings.Temps);
                         LcdLayout? layout = page == LcdPage.Custom ? _layout : null;
@@ -296,6 +289,39 @@ public sealed class LcdService : IDisposable
     /// O quadro atual da imagem de cada elemento do layout, carregando os arquivos novos e
     /// descartando os que saíram do layout. Chamar com o _renderGate tomado.
     /// </summary>
+    /// <summary>A página de cada modo (o 2, rodízio, é resolvido em <see cref="RotationPage"/>).</summary>
+    private static LcdPage PageFor(int mode) => mode switch
+    {
+        1 => LcdPage.Curve,
+        3 => LcdPage.Custom,
+        4 => LcdPage.Chart,
+        5 => LcdPage.Gauges,
+        6 => LcdPage.Clock,
+        7 => LcdPage.Minimal,
+        8 => LcdPage.Tiles,
+        9 => LcdPage.Weather,
+        _ => LcdPage.Temperatures,
+    };
+
+    /// <summary>A página do rodízio que vale agora: cada uma fica o seu tempo, e a volta recomeça.</summary>
+    private LcdPage RotationPage(LcdSettings settings)
+    {
+        IReadOnlyList<LcdRotationStep> steps = settings.Rotation is { Count: > 0 } rotation
+            ? rotation
+            : [new LcdRotationStep(0, settings.PageSeconds), new LcdRotationStep(1, settings.PageSeconds)];
+
+        long lap = steps.Sum(s => (long)Math.Max(2, s.Seconds));
+        long elapsed = (long)_clock.Elapsed.TotalSeconds % lap;
+        foreach (LcdRotationStep step in steps)
+        {
+            long seconds = Math.Max(2, step.Seconds);
+            if (elapsed < seconds)
+                return PageFor(step.Mode);
+            elapsed -= seconds;
+        }
+        return LcdPage.Temperatures;
+    }
+
     private SKImage?[] ResolveMedia(LcdLayout layout, long elapsedMs, out bool animated)
     {
         animated = false;

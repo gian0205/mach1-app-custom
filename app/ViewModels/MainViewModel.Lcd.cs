@@ -55,6 +55,7 @@ public partial class MainViewModel
     /// <summary>0 = temperaturas e sensores, 1 = Curve Optimizer, 2 = alterna as duas, 3 = layout personalizado.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsCustomLayout))]
+    [NotifyPropertyChangedFor(nameof(IsRotation))]
     private int _lcdPageMode;
 
     public bool IsCustomLayout => LcdPageMode == CustomPageMode;
@@ -193,6 +194,7 @@ public partial class MainViewModel
         LcdNeon = profile.LcdNeon;
         LcdPageMode = Math.Clamp(profile.LcdPageMode, 0, LastPageMode);
         LcdPageSeconds = profile.LcdPageSeconds;
+        LoadRotation(profile);
         LcdImagePath = profile.LcdImagePath;
         LcdImageDim = profile.LcdImageDim;
         AlertEnabled = profile.AlertEnabled;
@@ -221,6 +223,7 @@ public partial class MainViewModel
         profile.LcdNeon = LcdNeon;
         profile.LcdPageMode = LcdPageMode;
         profile.LcdPageSeconds = (int)(LcdPageSeconds ?? 8);
+        StoreRotation(profile);
         profile.LcdImagePath = LcdImagePath;
         profile.LcdImageDim = (int)LcdImageDim;
         profile.AlertEnabled = AlertEnabled;
@@ -257,7 +260,8 @@ public partial class MainViewModel
         _alertActive,
         new LcdTempColors(TempColorsEnabled,
             (float)(CpuWarmAt ?? 0), (float)(CpuHotAt ?? 0), (float)(GpuWarmAt ?? 0), (float)(GpuHotAt ?? 0),
-            TempWarnColor.ToUInt32(), TempHotColor.ToUInt32()));
+            TempWarnColor.ToUInt32(), TempHotColor.ToUInt32()),
+        RotationSteps());
 
     /// <summary>Só desenha quadros com a tela ligada, com a aba da tela aberta ou com o editor de layout aberto.</summary>
     private void UpdateLcdActive() => _lcd.Active = LcdEnabled || SelectedTab == LcdTab || _editingLayout;
@@ -282,7 +286,8 @@ public partial class MainViewModel
     {
         PushLcdSettings();
         // Escolher a página do clima já liga a busca da previsão.
-        if (value == WeatherPageMode && !_loading)
+        bool weatherInRotation = value == RotationPageMode && LcdRotation.Any(r => r.Enabled && r.Mode == WeatherPageMode);
+        if ((value == WeatherPageMode || weatherInRotation) && !_loading)
             WeatherEnabled = true;
     }
 

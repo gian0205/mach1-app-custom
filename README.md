@@ -45,7 +45,8 @@ App .NET 10 + Avalonia que ajusta o processador Ryzen de dentro do Windows, cont
 
 **Tela do water cooler** (USB `1600:3005`, 720x1280)
 
-- Página de temperaturas e sensores (CPU, GPU, uso, memória, VRAM, consumo da GPU) e página do Curve Optimizer, fixas ou alternando
+- Página de temperaturas e sensores (CPU, GPU, uso, memória, VRAM, consumo da GPU) e página do Curve Optimizer
+- Rodízio de telas: as páginas escolhidas se revezam, cada uma pelo seu tempo, na ordem que você definir
 - Cinco estilos de painel: gráfico de temperatura e uso dos últimos minutos, medidores, relógio, minimalista e blocos com minigráficos
 - Página de clima pela [Open-Meteo](https://open-meteo.com/): tempo agora, próximas horas e próximos dias, com localização automática ou cidade escolhida
 - Dezessete temas prontos, sete deles neon, com as barras desenhadas como tubos acesos

@@ -65,7 +65,7 @@ Há páginas prontas, estilos de painel e uma página livre:
 
 - **Temperaturas e sensores**: temperatura do processador e da placa de vídeo, uso, memória, memória de vídeo e consumo da placa de vídeo.
 - **Curve Optimizer**: a margem e o clock de cada núcleo.
-- **Alternar entre as duas**: troca de página a cada tantos segundos.
+- **Rodízio de telas**: as páginas que você marcar se revezam na tela, cada uma pelo tempo que você definir. Veja abaixo.
 - **Layout personalizado**: o que você montar no [editor de layout](#editor-de-layout).
 - **Gráfico de temperatura e uso**: as linhas dos últimos três minutos, do processador e da placa de vídeo.
 - **Medidores**: arcos para as duas temperaturas e, menores, uso do processador, uso da placa de vídeo e memória.
@@ -83,6 +83,12 @@ A imagem acima mostra a página de temperaturas, a página do Curve Optimizer e 
 ![Os cinco estilos de painel, no tema padrão e em um tema neon](imagens/estilos.png)
 
 Os cinco estilos, em cima no tema Ardósia e embaixo no Neon ciano, com leituras de exemplo: gráfico, medidores, relógio, minimalista e blocos. Eles usam as cores do tema escolhido, o efeito neon, as cores da temperatura e o fundo com imagem ou vídeo, e se rearranjam em tela deitada ou quadrada. Os gráficos começam vazios e só ocupam a largura toda depois de três minutos com o app aberto.
+
+**Rodízio de telas**
+
+![A lista do rodízio de telas](imagens/rodizio.png)
+
+Com **Rodízio de telas** escolhido em **Conteúdo**, aparece a lista de todas as páginas. Marque as que entram no rodízio, defina quantos segundos cada uma fica na tela (de 2 a 600) e use as setas para mudar a ordem. Depois da última, o rodízio volta à primeira. Quem usava o antigo "Alternar entre as duas" começa com temperaturas e Curve Optimizer marcados, no mesmo tempo de antes. Pôr o clima no rodízio já liga a busca da previsão.
 
 **Aparência**
 
