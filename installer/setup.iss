@@ -6,7 +6,7 @@
 ; Com /DTestBuild sai uma variante com outro nome e outro AppId, para testar o instalador sem
 ; tocar em uma instalação de verdade.
 
-#define AppVersion "1.0.5"
+#define AppVersion "1.0.6"
 #ifdef TestBuild
   #define AppName "MACH1 custom app (teste)"
   #define AppGuid "0B7E5D51-9C1F-4E0A-8F3B-6A2D4C9E7F10"
